@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Curio — Privacy Policy</title>
+<style>
+  :root {
+    --paper: #FAF7F2; --paper-2: #F4F0E7; --card: #FFFDF8; --ink: #2C2C2A;
+    --ink-2: #6B6558; --ink-3: #7A7368; --line: #E5DEC9; --sage: #5DCAA5;
+    --sage-ink: #04342C; --sage-tint: #E1F5EE; --amber-tint: #FAEEDA; --amber-ink: #854F0B;
+    --shell: #EFEAE0;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--shell); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color: var(--ink); line-height: 1.65; }
+  .page { max-width: 760px; margin: 0 auto; padding: 48px 24px 96px; }
+  .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+  .logo { width: 30px; height: 30px; border-radius: 9px; background: var(--sage); display: flex; align-items: center; justify-content: center; color: var(--sage-ink); }
+  .brand-name { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+  h1 { font-size: 26px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 6px; }
+  .updated { font-size: 13px; color: var(--ink-3); margin: 0 0 32px; }
+  h2 { font-size: 17px; font-weight: 600; margin: 32px 0 10px; letter-spacing: -0.01em; }
+  p, li { font-size: 14.5px; color: var(--ink-2); }
+  ul { padding-left: 20px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; margin: 14px 0; }
+  .callout { background: var(--sage-tint); border-radius: 10px; padding: 14px 16px; font-size: 14px; color: #0F4A3A; }
+  .flag { background: var(--amber-tint); color: var(--amber-ink); border-radius: 10px; padding: 14px 16px; font-size: 14px; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 13.5px; }
+  th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: var(--paper-2); font-weight: 600; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.92em; background: var(--paper-2); padding: 1px 5px; border-radius: 4px; }
+  a { color: #0F6E56; }
+  footer { margin-top: 48px; font-size: 12.5px; color: var(--ink-3); border-top: 1px solid var(--line); padding-top: 16px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="brand">
+    <div class="logo">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19a9 9 0 0 1 9 0 9 9 0 0 1 9 0M3 6a9 9 0 0 1 9 0 9 9 0 0 1 9 0M3 6v13M12 6v13M21 6v13" /></svg>
+    </div>
+    <div class="brand-name">Curio</div>
+  </div>
+
+  <h1>Privacy Policy</h1>
+  <p class="updated">Last updated: 2026-07-13 · Applies to the Curio Chrome extension</p>
+
+  <div class="callout">
+    <strong>The short version:</strong> Curio has no backend of its own. Your chapter content and chat
+    live only in this browser's memory while the window is open, and are gone the moment you close it.
+    The only place your content is ever sent is the AI provider you (a parent or teacher) choose and
+    connect with your own API key.
+  </div>
+
+  <h2>1. What Curio is</h2>
+  <p>
+    Curio is a browser extension that turns a photographed, scanned, or typed chapter into a private,
+    age-appropriate AI tutor for that one chapter. It runs entirely in your browser — there is no Curio
+    server, account system, or database.
+  </p>
+
+  <h2>2. What data exists, and where it lives</h2>
+  <table>
+    <tr><th>Data</th><th>Where it lives</th><th>When it's deleted</th></tr>
+    <tr><td>Uploaded chapter content (photos, text, extracted pages)</td><td>In-memory in the open popup window only</td><td>Immediately when the window is closed</td></tr>
+    <tr><td>Chat history for the current chapter</td><td>In-memory only</td><td>Immediately when the window is closed</td></tr>
+    <tr><td>Settings (age, language, AI provider, model, optional PIN hash)</td><td><code>chrome.storage.local</code> on this device</td><td>When cleared in Settings, or the extension is removed</td></tr>
+    <tr><td>Your AI provider API key</td><td><code>chrome.storage.local</code> on this device, never synced</td><td>"Clear key" in Settings, or extension removal</td></tr>
+    <tr><td>Progress record: past quiz scores and short topic labels (e.g. "fractions") per chapter title</td><td><code>chrome.storage.local</code> on this device</td><td>Extension removal (no in-app clear yet)</td></tr>
+  </table>
+  <p>Nothing in the table above is ever sent to a server operated by us, because we do not operate one.</p>
+
+  <h2>3. What your chosen AI provider sees</h2>
+  <p>
+    When you upload a chapter or ask a question, Curio sends the relevant chapter content and your
+    question directly from your browser to the AI provider you selected in Settings — currently OpenAI,
+    Anthropic, or Google Gemini. We do not see or intercept this traffic; it goes straight from your
+    browser to their API using the key you provided.
+  </p>
+  <p>Please review your chosen provider's own privacy policy and terms, since their data retention and
+  training practices are set by them, not us:</p>
+  <ul>
+    <li>OpenAI — <a href="https://openai.com/policies/privacy-policy" target="_blank" rel="noreferrer">Privacy Policy</a> · <a href="https://openai.com/policies/terms-of-use" target="_blank" rel="noreferrer">Terms</a></li>
+    <li>Anthropic — <a href="https://www.anthropic.com/legal/privacy" target="_blank" rel="noreferrer">Privacy Policy</a> · <a href="https://www.anthropic.com/legal/consumer-terms" target="_blank" rel="noreferrer">Terms</a></li>
+    <li>Google Gemini — <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">Privacy Policy</a> · <a href="https://ai.google.dev/gemini-api/terms" target="_blank" rel="noreferrer">Terms</a></li>
+  </ul>
+  <p>Where a provider offers a no-training / zero-retention option for API traffic, we recommend it,
+  especially for younger students.</p>
+
+  <h2>4. One more first-run download</h2>
+  <p>
+    To search your chapter privately, Curio runs a small local "embedding" model in your browser. Its
+    weights are downloaded once from Hugging Face (<code>huggingface.co</code>) and cached by your
+    browser — this download contains no data about you or your chapter, only the model file itself.
+  </p>
+
+  <h2>5. Children's privacy</h2>
+  <div class="flag">
+    Curio is designed to be set up by a parent or teacher on behalf of a child. The adult provides the
+    AI provider account and API key, sees a plain-language disclosure of what that provider will
+    process, and explicitly consents before the child can use the tutor. We do not knowingly collect
+    personal information from children ourselves — we have no accounts and no server. The child's
+    chapter content and questions are only processed by the AI provider the adult selected, under that
+    adult's account and consent.
+  </div>
+  <p>If you are a parent or teacher, please review the linked provider terms above — some providers set
+  their own age or consent requirements for API use.</p>
+
+  <h2>6. Security</h2>
+  <ul>
+    <li>All communication with your AI provider happens over HTTPS.</li>
+    <li>Your API key is stored only in <code>chrome.storage.local</code>, never synced across devices, and never logged.</li>
+    <li>The extension requests access only to the specific AI provider domains and the model-weights host — nothing broader.</li>
+    <li>No remote code execution: the extension runs no dynamically fetched scripts.</li>
+  </ul>
+
+  <h2>7. Your controls</h2>
+  <ul>
+    <li><strong>Clear key</strong> (Settings) — deletes your stored API key immediately.</li>
+    <li><strong>Clear chapter</strong> (Settings) — ends the current session and returns to Upload.</li>
+    <li><strong>Close the window</strong> — immediately discards all chapter content and chat history.</li>
+    <li><strong>Remove the extension</strong> — deletes all locally stored settings and progress records.</li>
+  </ul>
+
+  <h2>8. Changes to this policy</h2>
+  <p>If this policy changes, we'll update the "Last updated" date above. Since Curio has no account
+  system, we cannot notify you directly — please check back if you have concerns.</p>
+
+  <h2>9. Contact</h2>
+  <p>Questions about this policy can be directed to the extension's listed support contact on its Chrome
+  Web Store page.</p>
+
+  <footer>Curio — a private, grounded AI chapter tutor. This page is bundled with the extension and
+  works offline.</footer>
+</div>
+</body>
+</html>

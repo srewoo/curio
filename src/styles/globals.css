@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    /* Warm-paper shell from design/mockups.html */
+    background: #efeae0;
+    color: #2c2c2a;
+    /* Accessibility: min 16px body text (PRD §7.4) */
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* Honor reduced-motion for progress/typing animations (PRD §7.4). */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
+
+@layer components {
+  .curio-card {
+    @apply bg-card border border-line rounded-xl;
+  }
+  .curio-btn {
+    @apply inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium border border-line-2 bg-transparent text-ink cursor-pointer transition-colors;
+  }
+  .curio-btn:hover {
+    @apply bg-paper-2;
+  }
+  .curio-btn-primary {
+    @apply bg-sage text-sage-ink border-sage;
+  }
+  .curio-btn-primary:hover {
+    @apply opacity-90 bg-sage;
+  }
+  .curio-pill {
+    @apply px-3 py-1.5 rounded-full text-xs border border-line-2 bg-transparent text-ink cursor-pointer;
+  }
+  .curio-pill-on {
+    @apply bg-sage text-sage-ink border-sage;
+  }
+  .curio-input {
+    @apply px-3 py-2.5 rounded-lg border border-line-2 bg-card text-sm text-ink outline-none;
+  }
+  .curio-input:focus {
+    @apply border-sage;
+  }
+}
+
+/* Rendered tutor Markdown + MathML (src/lib/render/markdown.ts) */
+.curio-prose > :first-child { margin-top: 0; }
+.curio-prose > :last-child { margin-bottom: 0; }
+.curio-prose p { margin: 0 0 8px; }
+.curio-prose ol, .curio-prose ul { margin: 0 0 8px; padding-left: 20px; }
+.curio-prose li { margin: 2px 0; }
+.curio-prose strong { font-weight: 600; }
+.curio-prose code {
+  background: var(--paper-2, #F4F0E7); padding: 1px 5px; border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.9em;
+}
+.curio-prose pre {
+  background: #F1EDE5; padding: 10px 12px; border-radius: 8px; overflow-x: auto; margin: 0 0 8px;
+}
+.curio-prose pre code { background: none; padding: 0; }
+.curio-prose math[display="block"] { margin: 6px 0; overflow-x: auto; }
+.curio-prose table { border-collapse: collapse; margin: 0 0 8px; font-size: 0.95em; }
+.curio-prose th, .curio-prose td { border: 1px solid #E5DEC9; padding: 4px 8px; text-align: left; }

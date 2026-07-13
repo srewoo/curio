@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Curio: AI Tutor & Homework Helper",
+  "version": "1.0",
+  "description": "Private AI tutor for any chapter, PDF, or photo — step-by-step math, homework help & quizzes. Nothing leaves your browser.",
+  "action": {
+    "default_title": "Open Curio"
+  },
+  "background": {
+    "service_worker": "src/background/service-worker.ts",
+    "type": "module"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://api.openai.com/*",
+    "https://api.anthropic.com/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://huggingface.co/*",
+    "https://*.huggingface.co/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; connect-src 'self' https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com https://huggingface.co https://*.huggingface.co"
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  }
+}

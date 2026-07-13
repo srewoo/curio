@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Curio — Help</title>
+<style>
+  :root {
+    --paper: #FAF7F2; --paper-2: #F4F0E7; --card: #FFFDF8; --ink: #2C2C2A;
+    --ink-2: #6B6558; --ink-3: #7A7368; --line: #E5DEC9; --sage: #5DCAA5;
+    --sage-ink: #04342C; --sage-tint: #E1F5EE; --amber-tint: #FAEEDA; --amber-ink: #854F0B;
+    --shell: #EFEAE0;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--shell); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color: var(--ink); line-height: 1.65; }
+  .page { max-width: 760px; margin: 0 auto; padding: 48px 24px 96px; }
+  .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+  .logo { width: 30px; height: 30px; border-radius: 9px; background: var(--sage); display: flex; align-items: center; justify-content: center; color: var(--sage-ink); }
+  .brand-name { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+  h1 { font-size: 26px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 6px; }
+  .sub { font-size: 14.5px; color: var(--ink-2); margin: 0 0 32px; }
+  .toc { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 36px; }
+  .toc a { font-size: 12.5px; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; text-decoration: none; color: var(--ink); }
+  h2 { font-size: 18px; font-weight: 600; margin: 36px 0 12px; letter-spacing: -0.01em; scroll-margin-top: 20px; }
+  h3 { font-size: 14.5px; font-weight: 600; margin: 18px 0 6px; }
+  p, li { font-size: 14.5px; color: var(--ink-2); }
+  ol, ul { padding-left: 20px; margin: 8px 0; }
+  li { margin: 5px 0; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 20px; margin: 12px 0; }
+  .step { display: flex; gap: 12px; align-items: flex-start; margin: 10px 0; }
+  .step .n { width: 22px; height: 22px; border-radius: 999px; background: var(--sage); color: var(--sage-ink); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .err { border-left: 3px solid var(--amber-ink); background: var(--amber-tint); border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 10px 0; font-size: 13.5px; color: var(--amber-ink); }
+  .err b { display: block; color: var(--ink); font-size: 13.5px; margin-bottom: 2px; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.92em; background: var(--paper-2); padding: 1px 5px; border-radius: 4px; }
+  a { color: #0F6E56; }
+  footer { margin-top: 48px; font-size: 12.5px; color: var(--ink-3); border-top: 1px solid var(--line); padding-top: 16px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="brand">
+    <div class="logo">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19a9 9 0 0 1 9 0 9 9 0 0 1 9 0M3 6a9 9 0 0 1 9 0 9 9 0 0 1 9 0M3 6v13M12 6v13M21 6v13" /></svg>
+    </div>
+    <div class="brand-name">Curio</div>
+  </div>
+
+  <h1>Help</h1>
+  <p class="sub">Everything you need to get a chapter tutored — from first setup to troubleshooting.</p>
+
+  <div class="toc">
+    <a href="#setup">Setup (parents/teachers)</a>
+    <a href="#upload">Uploading a chapter</a>
+    <a href="#chapters">Multiple chapters</a>
+    <a href="#chat">Chatting & math</a>
+    <a href="#checks">Puzzles & the final quiz</a>
+    <a href="#settings">Settings</a>
+    <a href="#errors">Troubleshooting</a>
+    <a href="#privacy">Privacy</a>
+  </div>
+
+  <h2 id="setup">Setup (parents &amp; teachers)</h2>
+  <p>Curio needs an AI provider API key to work. This is a one-time setup step for an adult — the
+  student never sees or enters the key.</p>
+  <div class="step"><div class="n">1</div><div>Open Curio and choose an AI provider: OpenAI, Anthropic, or Google Gemini.</div></div>
+  <div class="step"><div class="n">2</div><div>Paste an API key from that provider (each has a "get a key" link in the setup screen).</div></div>
+  <div class="step"><div class="n">3</div><div>Set your child's age and language — Curio matches its vocabulary to this.</div></div>
+  <div class="step"><div class="n">4</div><div>Confirm the consent checkbox, which discloses that your chosen provider will process the chapter content and questions.</div></div>
+  <p>You can change the provider, model, age, or language at any time from the gear icon in Settings.</p>
+
+  <h2 id="upload">Uploading a chapter</h2>
+  <ul>
+    <li>Accepted files: <code>.jpg</code>, <code>.jpeg</code>, <code>.png</code>, <code>.webp</code>, <code>.pdf</code>, <code>.docx</code>, <code>.txt</code>.</li>
+    <li>Up to 10 files and 25&nbsp;MB total per chapter.</li>
+    <li>For photos: good lighting and a flat, in-focus page work best. A blurry photo will be flagged for re-upload rather than silently guessed at.</li>
+    <li>PDFs are split into individual pages automatically.</li>
+  </ul>
+
+  <h2 id="chapters">If your upload has more than one chapter</h2>
+  <p>Curio works best focused on a single chapter. If it detects your upload spans more than one
+  chapter or section, it will ask which one you want to study before building the tutor — or you can
+  choose "use the whole upload" if the split doesn't look right.</p>
+
+  <h2 id="chat">Chatting &mdash; and math</h2>
+  <p>Ask anything about the uploaded chapter in plain language. Curio answers only from what you
+  uploaded, and will say so plainly if something isn't covered rather than guessing.</p>
+  <h3>Math &amp; science problems</h3>
+  <p>Curio can work through calculations step by step, showing each step and the rule behind it, with
+  equations rendered properly (including chemistry formulas). It also double-checks its own arithmetic
+  — if a calculation doesn't add up, you'll see a small "double-check this" note under the answer.</p>
+
+  <h2 id="checks">Puzzles &amp; the final quiz</h2>
+  <ul>
+    <li><strong>Quick checks:</strong> every five questions, Curio pauses with a short multiple-choice,
+    fill-in-the-blank, or true/false check. You can skip any puzzle.</li>
+    <li><strong>"Test me":</strong> click this any time in chat for a graded end-of-chapter quiz — a mix
+    of multiple-choice and short written questions, scored out of 100 with a summary and specific
+    "topics to review". Curio remembers what you found tricky and revisits it next time you study the
+    same chapter.</li>
+  </ul>
+
+  <h2 id="settings">Settings</h2>
+  <div class="card">
+    <ul>
+      <li><strong>Age</strong> — controls vocabulary and sentence length.</li>
+      <li><strong>Language</strong> — chat and puzzles are written in this language.</li>
+      <li><strong>AI provider &amp; model</strong> — one model handles both reading photos and
+      answering; newer models generally do better with harder material.</li>
+      <li><strong>API key</strong> — paste a new key to replace the current one, or clear it entirely.</li>
+      <li><strong>Clear chapter</strong> — ends the session and returns to Upload.</li>
+    </ul>
+  </div>
+
+  <h2 id="errors">Troubleshooting</h2>
+  <div class="err"><b>"Your API key looks invalid or expired"</b>Double-check the key was copied in full
+  with no extra spaces, and that it's active on your provider's dashboard. Paste a fresh key in Settings.</div>
+  <div class="err"><b>"The tutor is resting" / rate-limit messages</b>Your provider is temporarily
+  limiting requests. Wait a minute and try again — Curio already retries automatically before showing
+  this.</div>
+  <div class="err"><b>"Couldn't read this page clearly"</b>The photo was too blurry, dark, or low-detail
+  to read reliably. Retake it in better light, holding the camera steady and the page flat.</div>
+  <div class="err"><b>"That's not in this chapter"</b>This is expected — Curio only answers from what you
+  uploaded. Ask about something the chapter actually covers, or upload more pages.</div>
+  <div class="err"><b>A math answer looks wrong</b>If Curio itself flags "double-check the arithmetic",
+  it already suspects a mistake in its own working — verify that step by hand and ask it to redo it.</div>
+
+  <h2 id="privacy">Privacy</h2>
+  <p>Curio stores your chapter content only in memory while the window is open — it's gone as soon as
+  you close it. See the full <a href="privacy.html" target="_blank" rel="noreferrer">Privacy Policy</a>
+  for details on what's stored locally and what your AI provider sees.</p>
+
+  <footer>Curio — a private, grounded AI chapter tutor. This page is bundled with the extension and
+  works offline.</footer>
+</div>
+</body>
+</html>

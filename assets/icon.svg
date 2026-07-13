@@ -1,0 +1,31 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="128" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6FD4B4"/>
+      <stop offset="1" stop-color="#4FBE9A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Sage rounded-square tile (brand mark from design/mockups.html) -->
+  <rect x="4" y="4" width="120" height="120" rx="30" fill="url(#bg)"/>
+
+  <!-- Open book, paper-colored pages on dark-sage spine -->
+  <g>
+    <!-- left page -->
+    <path d="M64 46 C 54 39, 38 39, 26 44 L 26 88 C 38 83, 54 83, 64 90 Z"
+          fill="#FAF7F2" stroke="#04342C" stroke-width="4" stroke-linejoin="round"/>
+    <!-- right page -->
+    <path d="M64 46 C 74 39, 90 39, 102 44 L 102 88 C 90 83, 74 83, 64 90 Z"
+          fill="#FAF7F2" stroke="#04342C" stroke-width="4" stroke-linejoin="round"/>
+    <!-- spine -->
+    <line x1="64" y1="46" x2="64" y2="90" stroke="#04342C" stroke-width="4" stroke-linecap="round"/>
+    <!-- text lines (read as a page at larger sizes) -->
+    <line x1="34" y1="56" x2="55" y2="53" stroke="#9FE1CB" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="34" y1="66" x2="55" y2="63" stroke="#9FE1CB" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="73" y1="53" x2="94" y2="56" stroke="#9FE1CB" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="73" y1="63" x2="94" y2="66" stroke="#9FE1CB" stroke-width="3.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- Curiosity spark -->
+  <path d="M98 26 L101 35 L110 38 L101 41 L98 50 L95 41 L86 38 L95 35 Z" fill="#FAF7F2"/>
+</svg>
