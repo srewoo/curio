@@ -8,7 +8,7 @@ export const settingsSchema = z.object({
     message: 'ageBand must be one of the supported bands',
   }),
   language: z.string().min(2),
-  provider: z.enum(['openai', 'anthropic', 'gemini']),
+  provider: z.enum(['openai', 'anthropic', 'gemini', 'openrouter']),
   textModel: z.string().min(1),
   visionModel: z.string().min(1),
   // Salted hash of the settings-lock PIN, never the PIN itself (PRD §6.8).
@@ -17,7 +17,7 @@ export const settingsSchema = z.object({
   // Adult consent to the chosen provider processing a child's content
   // (COPPA/GDPR-K, PRD §7.1a). Captured at setup / on provider change.
   consent: z
-    .object({ provider: z.enum(['openai', 'anthropic', 'gemini']), acceptedAt: z.string() })
+    .object({ provider: z.enum(['openai', 'anthropic', 'gemini', 'openrouter']), acceptedAt: z.string() })
     .optional(),
 });
 

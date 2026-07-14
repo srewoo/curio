@@ -8,6 +8,7 @@ import { Chat } from '@/ui/screens/Chat';
 import { Settings } from '@/ui/screens/Settings';
 import { Assessment } from '@/ui/screens/Assessment';
 import { Results } from '@/ui/screens/Results';
+import { Dashboard } from '@/ui/screens/Dashboard';
 
 function Router(): JSX.Element {
   const { screen, openSettings, banner } = useCurio();
@@ -26,6 +27,7 @@ function Router(): JSX.Element {
       {screen === 'assessment' && <Assessment />}
       {screen === 'results' && <Results />}
       {screen === 'settings' && <Settings />}
+      {screen === 'dashboard' && <Dashboard />}
     </Shell>
   );
 }

@@ -34,7 +34,10 @@ function systemPrompt(spec: AssessmentSpec, age: number): string {
     '{"kind":"mcq"|"text","question":string,"choices":string[],"correctIndex":number,"rubric":string}. ' +
     'For mcq: 4 choices and correctIndex 0–3, rubric "". ' +
     'For text: choices [], correctIndex -1, and rubric = what a good answer must mention. ' +
-    'Cover different parts of the chapter. Keep language simple and age-appropriate.'
+    'Cover different parts of the chapter. Keep language simple and age-appropriate. ' +
+    'CRITICAL RULE: Focus exclusively on academic concepts, subject matter, and lessons of the chapter. ' +
+    'Never generate questions about preface text, publishing details, copyright, book credits, page counts, ' +
+    'who published the book, what is printed on watermarks/special paper, or author/publisher metadata.'
   );
 }
 

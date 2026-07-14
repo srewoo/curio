@@ -26,7 +26,12 @@ export type BudgetState = 'ok' | 'warn' | 'exceeded';
 
 export class SessionBudget {
   private spent = 0;
-  constructor(private readonly capUsd: number = COST.defaultSessionBudgetUsd) {}
+  constructor(
+    private readonly capUsd: number = COST.defaultSessionBudgetUsd,
+    initialSpentUsd: number = 0
+  ) {
+    this.spent = initialSpentUsd;
+  }
 
   get spentUsd(): number {
     return this.spent;

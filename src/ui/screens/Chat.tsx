@@ -4,11 +4,12 @@ import { useCurio } from '@/state/store';
 import { Icon } from '@/ui/components/Icon';
 import { PuzzleCard } from './Puzzle';
 import { markdownToHtml } from '@/lib/render/markdown';
+import { useMermaid } from '@/ui/hooks/useMermaid';
 
 // Chat tutor (mockup screen 3). Streams-in via the store; shows follow-ups and
 // injects a puzzle every 5th turn.
 export function Chat(): JSX.Element {
-  const { summary, history, thinking, turnsUntilPuzzle, puzzle, ask, dismissPuzzle, notePuzzleResult, startAssessment } = useCurio();
+  const { summary, history, thinking, turnsUntilPuzzle, puzzle, ask, dismissPuzzle, notePuzzleResult, startAssessment, clearChapter, backToLibrary } = useCurio();
   const [input, setInput] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
 
@@ -33,11 +34,27 @@ export function Chat(): JSX.Element {
         </span>
         <button
           className="curio-btn py-1.5 px-3 text-xs"
+          onClick={backToLibrary}
+          disabled={thinking}
+          title="Go back to the library upload screen"
+        >
+          <Icon name="home" size={13} /> Library
+        </button>
+        <button
+          className="curio-btn py-1.5 px-3 text-xs"
           onClick={() => void startAssessment()}
           disabled={thinking}
           title="Take an end-of-chapter quiz"
         >
           <Icon name="bulb" size={13} /> Test me
+        </button>
+        <button
+          className="curio-btn py-1.5 px-3 text-xs border border-red-line text-red-ink hover:bg-red-tint hover:border-red-ink"
+          onClick={clearChapter}
+          disabled={thinking}
+          title="Discard this chapter and delete session data"
+        >
+          <Icon name="trash" size={13} /> Discard
         </button>
       </div>
 
@@ -79,11 +96,14 @@ export function Chat(): JSX.Element {
 }
 
 function Bubble({ turn, onFollowUp }: { turn: ChatTurn; onFollowUp: (t: string) => void }): JSX.Element {
+  const containerRef = useRef<HTMLDivElement>(null);
+  useMermaid(containerRef, turn.role === 'tutor' ? turn.text : '');
+
   if (turn.role === 'user') {
     return <div className="self-end max-w-[88%] px-3.5 py-3 rounded-xl rounded-br bg-userbubble text-userink text-sm leading-relaxed">{turn.text}</div>;
   }
   return (
-    <div className="self-start max-w-[88%] px-3.5 py-3 rounded-xl rounded-bl bg-card border border-line text-sm leading-relaxed">
+    <div ref={containerRef} className="self-start max-w-[88%] px-3.5 py-3 rounded-xl rounded-bl bg-card border border-line text-sm leading-relaxed">
       <div className="curio-prose" dangerouslySetInnerHTML={{ __html: markdownToHtml(turn.text) }} />
       {turn.arithmeticFlag && (
         <div className="mt-2.5 text-[12px] text-amber-ink bg-amber-tint rounded-lg px-2.5 py-1.5">

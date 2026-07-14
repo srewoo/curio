@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Curio: AI Tutor & Homework Helper",
-  "version": "1.0",
+  "version": "1.1",
   "description": "Private AI tutor for any chapter, PDF, or photo — step-by-step math, homework help & quizzes. Nothing leaves your browser.",
   "action": {
     "default_title": "Open Curio"
@@ -18,10 +18,11 @@
     "https://api.anthropic.com/*",
     "https://generativelanguage.googleapis.com/*",
     "https://huggingface.co/*",
-    "https://*.huggingface.co/*"
+    "https://*.huggingface.co/*",
+    "https://openrouter.ai/*"
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; connect-src 'self' https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com https://huggingface.co https://*.huggingface.co"
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; connect-src 'self' https://api.openai.com https://api.anthropic.com https://generativelanguage.googleapis.com https://huggingface.co https://*.huggingface.co https://openrouter.ai"
   },
   "icons": {
     "16": "icons/icon-16.png",

@@ -1,6 +1,6 @@
 {
   "name": "curio",
-  "version": "1.0",
+  "version": "1.1",
   "private": true,
   "type": "module",
   "description": "Curio — a private, grounded, age-appropriate AI chapter tutor (Chrome MV3 extension).",
@@ -19,6 +19,7 @@
     "mammoth": "^1.8.0",
     "marked": "^18.0.6",
     "mathjs": "^15.2.0",
+    "mermaid": "^11.16.0",
     "pdfjs-dist": "^4.5.136",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

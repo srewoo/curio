@@ -1,7 +1,21 @@
 import { marked } from 'marked';
 import katex from 'katex';
 import 'katex/dist/contrib/mhchem.mjs'; // \ce{...} chemistry support
-import DOMPurify from 'dompurify';
+import dompurify from 'dompurify';
+
+let DOMPurify = dompurify;
+if (typeof window === 'undefined') {
+  try {
+    // @ts-ignore: jsdom is resolved dynamically in test environments only
+    const { JSDOM } = await import(/* @vite-ignore */ 'jsdom');
+    const { window: jsdomWindow } = new JSDOM('');
+    DOMPurify = dompurify(jsdomWindow as any);
+  } catch {
+    DOMPurify = {
+      sanitize: (html: string) => html,
+    } as any;
+  }
+}
 
 // Render tutor messages as safe Markdown + math (PRD math/STEM support).
 // Math uses KaTeX with MathML output — Chrome renders MathML natively, so we
@@ -9,6 +23,25 @@ import DOMPurify from 'dompurify';
 // All output is sanitized with DOMPurify (LLM text is semi-trusted).
 
 marked.setOptions({ gfm: true, breaks: true });
+
+marked.use({
+  renderer: {
+    code(token: { text: string; lang?: string }): string | false {
+      const lang = token.lang || '';
+      if (lang === 'mermaid') {
+        const code = token.text;
+        const escapedCode = code
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+        return `<div class="curio-mermaid my-4" data-code="${escapedCode}"></div>`;
+      }
+      return false;
+    },
+  },
+});
 
 function escapeHtml(s: string): string {
   return s.replace(/[&<>]/g, (c) => (c === '&' ? '&amp;' : c === '<' ? '&lt;' : '&gt;'));
@@ -39,5 +72,5 @@ export function markdownToHtml(md: string): string {
   const { text, blocks } = extractMath(md);
   let html = marked.parse(text) as string;
   html = html.replace(/@@CURIOMATH(\d+)@@/g, (_m, i: string) => blocks[Number(i)] ?? '');
-  return DOMPurify.sanitize(html, { USE_PROFILES: { html: true, mathMl: true } });
+  return DOMPurify.sanitize(html, { USE_PROFILES: { html: true, mathMl: true, svg: true, svgFilters: true } });
 }

@@ -1,6 +1,6 @@
 // Provider catalog (PRD §6.6). Each provider exposes text + vision models.
 // Host permissions in manifest.json must stay in sync with `apiBase` hosts.
-export type ProviderId = 'openai' | 'anthropic' | 'gemini';
+export type ProviderId = 'openai' | 'anthropic' | 'gemini' | 'openrouter';
 
 export interface ModelOption {
   readonly id: string;
@@ -79,6 +79,27 @@ export const PROVIDERS: Readonly<Record<ProviderId, ProviderSpec>> = {
     getKeyUrl: 'https://aistudio.google.com/app/apikey',
     tosUrl: 'https://ai.google.dev/gemini-api/terms',
     privacyUrl: 'https://policies.google.com/privacy',
+  },
+  openrouter: {
+    id: 'openrouter',
+    label: 'OpenRouter',
+    apiBase: 'https://openrouter.ai/api',
+    textModels: [
+      { id: 'anthropic/claude-3.5-sonnet', label: 'Claude 3.5 Sonnet (OpenRouter)', inputPerMTokUsd: 3.0, outputPerMTokUsd: 15.0 },
+      { id: 'openai/gpt-4o-mini', label: 'GPT-4o mini (OpenRouter)', inputPerMTokUsd: 0.15, outputPerMTokUsd: 0.60 },
+      { id: 'openai/gpt-4o', label: 'GPT-4o (OpenRouter)', inputPerMTokUsd: 2.50, outputPerMTokUsd: 10.00 },
+      { id: 'google/gemini-2.0-flash', label: 'Gemini 2.0 Flash (OpenRouter)', inputPerMTokUsd: 0.10, outputPerMTokUsd: 0.40 },
+    ],
+    visionModels: [
+      { id: 'anthropic/claude-3.5-sonnet', label: 'Claude 3.5 Sonnet (OpenRouter)', inputPerMTokUsd: 3.0, outputPerMTokUsd: 15.0 },
+      { id: 'openai/gpt-4o-mini', label: 'GPT-4o mini (OpenRouter)', inputPerMTokUsd: 0.15, outputPerMTokUsd: 0.60 },
+      { id: 'openai/gpt-4o', label: 'GPT-4o (OpenRouter)', inputPerMTokUsd: 2.50, outputPerMTokUsd: 10.00 },
+      { id: 'google/gemini-2.0-flash', label: 'Gemini 2.0 Flash (OpenRouter)', inputPerMTokUsd: 0.10, outputPerMTokUsd: 0.40 },
+    ],
+    safetyModelId: 'openai/gpt-4o-mini',
+    getKeyUrl: 'https://openrouter.ai/keys',
+    tosUrl: 'https://openrouter.ai/terms',
+    privacyUrl: 'https://openrouter.ai/privacy',
   },
 };
 

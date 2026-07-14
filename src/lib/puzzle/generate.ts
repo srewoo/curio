@@ -19,7 +19,9 @@ const PUZZLE_SYSTEM =
   'Return ONLY JSON: {"kind":"mcq"|"fill-blank"|"true-false","question":string,' +
   '"choices":string[],"correctIndex":number,"explanation":string}. ' +
   'For mcq give 4 choices; for true-false give ["True","False"]; for fill-blank give []. ' +
-  'Keep it simple and age-appropriate. The explanation is one sentence.';
+  'Keep it simple and age-appropriate. The explanation is one sentence. ' +
+  'CRITICAL RULE: Focus exclusively on academic concepts/lessons of the chapter, ignoring any prefatory text, ' +
+  'publisher/author metadata, copyright, who published the book, watermarks, page credits, or prefaces.';
 
 export async function generatePuzzle(
   provider: ProviderId,

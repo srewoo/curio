@@ -54,6 +54,8 @@
     <a href="#chapters">Multiple chapters</a>
     <a href="#chat">Chatting & math</a>
     <a href="#checks">Puzzles & the final quiz</a>
+    <a href="#library">Chapter Library</a>
+    <a href="#dashboard">Performance Dashboard</a>
     <a href="#settings">Settings</a>
     <a href="#errors">Troubleshooting</a>
     <a href="#privacy">Privacy</a>
@@ -62,8 +64,8 @@
   <h2 id="setup">Setup (parents &amp; teachers)</h2>
   <p>Curio needs an AI provider API key to work. This is a one-time setup step for an adult — the
   student never sees or enters the key.</p>
-  <div class="step"><div class="n">1</div><div>Open Curio and choose an AI provider: OpenAI, Anthropic, or Google Gemini.</div></div>
-  <div class="step"><div class="n">2</div><div>Paste an API key from that provider (each has a "get a key" link in the setup screen).</div></div>
+  <div class="step"><div class="n">1</div><div>Open Curio and choose an AI provider: OpenAI, Anthropic, Google Gemini, or OpenRouter.</div></div>
+  <div class="step"><div class="n">2</div><div>Paste an API key from that provider (each has a "get a key" link in the setup screen). Choosing OpenRouter allows you to consolidate OpenAI, Claude, and Google models under a single account.</div></div>
   <div class="step"><div class="n">3</div><div>Set your child's age and language — Curio matches its vocabulary to this.</div></div>
   <div class="step"><div class="n">4</div><div>Confirm the consent checkbox, which discloses that your chosen provider will process the chapter content and questions.</div></div>
   <p>You can change the provider, model, age, or language at any time from the gear icon in Settings.</p>
@@ -99,6 +101,22 @@
     same chapter.</li>
   </ul>
 
+  <h2 id="library">Chapter Library</h2>
+  <p>Curio maintains a local-encrypted library of your recently uploaded chapters (up to 5 chapters at a time) directly on the main upload screen.</p>
+  <ul>
+    <li><strong>Instant Load:</strong> Clicking any chapter card in the list immediately loads its full vectors and chat history, allowing you to switch chapters without re-uploading.</li>
+    <li><strong>Rename:</strong> Click the settings (pencil) icon to rename a chapter directly inline.</li>
+    <li><strong>Delete:</strong> Click the trash icon to permanently remove the chapter's vector database and study session history from disk.</li>
+  </ul>
+
+  <h2 id="dashboard">Performance Dashboard</h2>
+  <p>You can track your learning statistics and quiz progression gains over time inside the <strong>Performance Dashboard</strong>, accessible via the link next to recent chapters on the upload screen.</p>
+  <ul>
+    <li><strong>Progression Curves:</strong> Every chapter you take a quiz on renders a custom line graph showing your scores over multiple attempts, allowing you to visualize your improvement curve.</li>
+    <li><strong>Review Lists:</strong> Displays a list of active weak topics you struggled with in recent assessments, helping you focus your review.</li>
+    <li><strong>Encrypted storage:</strong> All progression logs and scores are securely encrypted on your local device. You can clear them at any time using the "Clear Assessment History" button.</li>
+  </ul>
+
   <h2 id="settings">Settings</h2>
   <div class="card">
     <ul>
@@ -107,7 +125,7 @@
       <li><strong>AI provider &amp; model</strong> — one model handles both reading photos and
       answering; newer models generally do better with harder material.</li>
       <li><strong>API key</strong> — paste a new key to replace the current one, or clear it entirely.</li>
-      <li><strong>Clear chapter</strong> — ends the session and returns to Upload.</li>
+      <li><strong>Clear chapter</strong> — ends the session, deletes the active session state, and returns to Upload.</li>
     </ul>
   </div>
 
@@ -123,10 +141,10 @@
   uploaded. Ask about something the chapter actually covers, or upload more pages.</div>
   <div class="err"><b>A math answer looks wrong</b>If Curio itself flags "double-check the arithmetic",
   it already suspects a mistake in its own working — verify that step by hand and ask it to redo it.</div>
+  <div class="err"><b>Active Session Resiliency</b>Your chapter and chat are automatically saved encrypted on your device. If you close the window, your active session is restored. If you wish to delete it permanently, click the <b>Discard</b> button in the chat header.</div>
 
   <h2 id="privacy">Privacy</h2>
-  <p>Curio stores your chapter content only in memory while the window is open — it's gone as soon as
-  you close it. See the full <a href="privacy.html" target="_blank" rel="noreferrer">Privacy Policy</a>
+  <p>Curio stores your chapter content and chat history fully encrypted on your local disk. See the full <a href="privacy.html" target="_blank" rel="noreferrer">Privacy Policy</a>
   for details on what's stored locally and what your AI provider sees.</p>
 
   <footer>Curio — a private, grounded AI chapter tutor. This page is bundled with the extension and

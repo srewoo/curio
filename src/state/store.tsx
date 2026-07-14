@@ -4,7 +4,7 @@ import type { AssessmentAnswer, AssessmentQuestion, AssessmentResult, ChapterSum
 import { generateAssessment, DEFAULT_SPEC } from '@/lib/assessment/generate';
 import { gradeAssessment } from '@/lib/assessment/grade';
 import type { ChapterProgress } from '@/types/progress';
-import { getProgress, loadAllProgress, recordAttempt, topicLabel } from '@/lib/progress/store';
+import { getProgress, loadAllProgress, recordAttempt, topicLabel, clearAllProgress, renameProgress, deleteProgress, normalizeChapterKey } from '@/lib/progress/store';
 import { findModel } from '@/config/providers';
 import { PUZZLE } from '@/config/constants';
 import { loadSettings, saveSettings as persistSettings, hasApiKey } from '@/lib/storage/settings-store';
@@ -16,8 +16,9 @@ import { generateSummary, retrieve } from '@/lib/rag/retriever';
 import { produceAnswer } from '@/lib/chat/answer';
 import { generatePuzzle } from '@/lib/puzzle/generate';
 import { SessionBudget } from '@/lib/cost/budget';
+import { loadActiveSession, saveActiveSession, clearActiveSession, loadSessionByKey, deleteSessionByKey, renameSessionByKey } from '@/lib/storage/session-store';
 
-export type Screen = 'loading' | 'onboarding' | 'upload' | 'ingesting' | 'chapters' | 'chat' | 'settings' | 'assessment' | 'results';
+export type Screen = 'loading' | 'onboarding' | 'upload' | 'ingesting' | 'chapters' | 'chat' | 'settings' | 'assessment' | 'results' | 'dashboard';
 
 interface CurioContextValue {
   readonly screen: Screen;
@@ -50,6 +51,12 @@ interface CurioContextValue {
   readonly startAssessment: () => Promise<void>;
   readonly submitAssessment: (answers: AssessmentAnswer[]) => Promise<void>;
   readonly backToChat: () => void;
+  readonly goToDashboard: () => void;
+  readonly backToLibrary: () => void;
+  readonly clearProgress: () => Promise<void>;
+  readonly loadChapterSession: (key: string) => Promise<void>;
+  readonly renameChapter: (key: string, newTitle: string) => Promise<void>;
+  readonly deleteChapter: (key: string) => Promise<void>;
 }
 
 const CurioContext = createContext<CurioContextValue | null>(null);
@@ -83,8 +90,25 @@ export function CurioProvider({ children }: { children: ReactNode }): JSX.Elemen
 
   useEffect(() => {
     void (async () => {
-      setSettings(await loadSettings());
-      setScreen((await hasApiKey()) ? 'upload' : 'onboarding');
+      const activeSettings = await loadSettings();
+      setSettings(activeSettings);
+      
+      const ok = await hasApiKey();
+      if (!ok) {
+        setScreen('onboarding');
+      } else {
+        const restored = await loadActiveSession();
+        if (restored) {
+          storeRef.current = restored.store;
+          setSummary(restored.summary);
+          setHistory(restored.history as ChatTurn[]);
+          setTurnCount(restored.turnCount);
+          budgetRef.current = new SessionBudget(activeSettings.sessionBudgetUsd, restored.spentUsd);
+          setScreen('chat');
+        } else {
+          setScreen('upload');
+        }
+      }
       setRecentProgress(await loadAllProgress());
     })();
   }, []);
@@ -124,6 +148,7 @@ export function CurioProvider({ children }: { children: ReactNode }): JSX.Elemen
     pendingPagesRef.current = null;
     weakTopicsRef.current = [];
     budgetRef.current = new SessionBudget(settings.sessionBudgetUsd);
+    void clearActiveSession();
     setScreen('upload');
   }, [settings.sessionBudgetUsd]);
 
@@ -203,7 +228,8 @@ export function CurioProvider({ children }: { children: ReactNode }): JSX.Elemen
         }
         const title = span.title;
         const seed = await retrieve(result.store, title);
-        setSummary(await generateSummary(settings.provider, settings.textModel, title, seed.chunks));
+        const generatedSummary = await generateSummary(settings.provider, settings.textModel, title, seed.chunks);
+        setSummary(generatedSummary);
         // Retention loop: reload prior progress for this chapter and seed the
         // session's weak-topic focus so puzzles/quiz revisit what was hard.
         const prior = await getProgress(title);
@@ -211,6 +237,9 @@ export function CurioProvider({ children }: { children: ReactNode }): JSX.Elemen
         weakTopicsRef.current = prior ? [...prior.weakTopics] : [];
         pendingPagesRef.current = null;
         setChapterSpans(null);
+        
+        void saveActiveSession(title, generatedSummary, [], 0, budgetRef.current.spentUsd, result.store);
+        
         setScreen('chat');
       } catch {
         setBanner('Something went wrong while reading your chapter. Please try again.');
@@ -302,13 +331,19 @@ export function CurioProvider({ children }: { children: ReactNode }): JSX.Elemen
           followUps,
           arithmeticFlag: result.kind === 'answer' ? result.arithmeticFlag : false,
         };
-        setHistory((h) => [...h, tutorTurn]);
+        const nextHistory = [...history, userTurn, tutorTurn];
+        setHistory(nextHistory);
         if (result.kind === 'answer') {
           const model = findModel(settings.provider, settings.textModel);
           if (model) budgetRef.current.add(result.usage, model);
         }
         const nextCount = turnCount + 1;
         setTurnCount(nextCount);
+        
+        if (summary) {
+          void saveActiveSession(summary.title, summary, nextHistory, nextCount, budgetRef.current.spentUsd, store);
+        }
+        
         if (nextCount % PUZZLE.everyNTurns === 0) await maybePuzzle(text);
       } finally {
         setThinking(false);
@@ -318,6 +353,52 @@ export function CurioProvider({ children }: { children: ReactNode }): JSX.Elemen
   );
 
   const dismissPuzzle = useCallback(() => setPuzzle(null), []);
+
+  const goToDashboard = useCallback(() => setScreen('dashboard'), []);
+  const backToLibrary = useCallback(() => setScreen('upload'), []);
+  const clearProgress = useCallback(async () => {
+    await clearAllProgress();
+    setRecentProgress([]);
+  }, []);
+
+  const loadChapterSession = useCallback(async (chapterKey: string) => {
+    const restored = await loadSessionByKey(chapterKey);
+    if (restored) {
+      storeRef.current = restored.store;
+      setSummary(restored.summary);
+      setHistory(restored.history as ChatTurn[]);
+      setTurnCount(restored.turnCount);
+      budgetRef.current = new SessionBudget(settings.sessionBudgetUsd, restored.spentUsd);
+      setScreen('chat');
+    } else {
+      setBanner('Could not load that chapter. Please try uploading it again.');
+    }
+  }, [settings.sessionBudgetUsd]);
+
+  const renameChapter = useCallback(async (chapterKey: string, newTitle: string) => {
+    await renameSessionByKey(chapterKey, newTitle);
+    await renameProgress(chapterKey, newTitle);
+    setRecentProgress(await loadAllProgress());
+    if (summary && normalizeChapterKey(summary.title) === chapterKey) {
+      setSummary({
+        ...summary,
+        title: newTitle,
+      });
+    }
+  }, [summary]);
+
+  const deleteChapter = useCallback(async (chapterKey: string) => {
+    await deleteSessionByKey(chapterKey);
+    await deleteProgress(chapterKey);
+    setRecentProgress(await loadAllProgress());
+    if (summary && normalizeChapterKey(summary.title) === chapterKey) {
+      storeRef.current = null;
+      setSummary(null);
+      setHistory([]);
+      setTurnCount(0);
+      setScreen('upload');
+    }
+  }, [summary]);
 
   const value = useMemo<CurioContextValue>(
     () => ({
@@ -351,8 +432,14 @@ export function CurioProvider({ children }: { children: ReactNode }): JSX.Elemen
       startAssessment,
       submitAssessment,
       backToChat,
+      goToDashboard,
+      backToLibrary,
+      clearProgress,
+      loadChapterSession,
+      renameChapter,
+      deleteChapter,
     }),
-    [screen, settings, ingestProgress, ingestNote, summary, history, turnCount, puzzle, thinking, banner, assessmentQuestions, assessmentResult, assessmentBusy, priorProgress, recentProgress, chapterSpans, selectChapterSpan, openSettings, closeSettings, saveSettings, refreshKey, startIngest, ask, dismissPuzzle, notePuzzleResult, clearChapter, startAssessment, submitAssessment, backToChat],
+    [screen, settings, ingestProgress, ingestNote, summary, history, turnCount, puzzle, thinking, banner, assessmentQuestions, assessmentResult, assessmentBusy, priorProgress, recentProgress, chapterSpans, selectChapterSpan, openSettings, closeSettings, saveSettings, refreshKey, startIngest, ask, dismissPuzzle, notePuzzleResult, clearChapter, startAssessment, submitAssessment, backToChat, goToDashboard, backToLibrary, clearProgress, loadChapterSession, renameChapter, deleteChapter],
   );
 
   return <CurioContext.Provider value={value}>{children}</CurioContext.Provider>;

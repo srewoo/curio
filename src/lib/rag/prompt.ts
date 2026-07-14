@@ -46,7 +46,8 @@ export const FOLLOWUP_INSTRUCTION =
 export function buildSummaryPrompt(): string {
   return (
     'Using only the chapter context, write a warm 2-sentence "What we\'ll cover" overview, ' +
-    'then suggest 3 starter questions. Return ONLY JSON: ' +
+    'then suggest 3 starter questions. Focus strictly on academic concepts/lessons, ignoring prefaces, publisher/author details, watermarks, page credits, or metadata. ' +
+    'Return ONLY JSON: ' +
     '{"overview": string, "starters": string[3]}.'
   );
 }

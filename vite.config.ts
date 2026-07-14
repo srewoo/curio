@@ -23,6 +23,9 @@ export default defineConfig({
     // Heavy runtime libs (transformers.js, pdf.js) are dynamically imported at
     // point of use so they do not bloat the initial popup bundle (PRD §7.2).
     chunkSizeWarningLimit: 4096,
+    rollupOptions: {
+      external: ['jsdom'],
+    },
     // NOTE: Chrome rejects files whose names start with "_" (e.g. Vite's
     // _commonjsHelpers chunk). The web-extension plugin overrides Rollup's
     // chunkFileNames, so we rename such files as a post-build step:

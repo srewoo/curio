@@ -38,19 +38,19 @@
 <div class="page">
   <div class="brand">
     <div class="logo">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19a9 9 0 0 1 9 0 9 9 0 0 1 9 0M3 6a9 9 0 0 1 9 0 9 9 0 0 1 9 0M3 6v13M12 6v13M21 6v13" /></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19a9 9 0 0 1 9 0 9 9 0 0 1 9 0M3 6a9 9 0 0 1 9 0M3 6v13M12 6v13M21 6v13" /></svg>
     </div>
     <div class="brand-name">Curio</div>
   </div>
 
   <h1>Privacy Policy</h1>
-  <p class="updated">Last updated: 2026-07-13 · Applies to the Curio Chrome extension</p>
+  <p class="updated">Last updated: 2026-07-14 · Applies to the Curio Chrome extension</p>
 
   <div class="callout">
-    <strong>The short version:</strong> Curio has no backend of its own. Your chapter content and chat
-    live only in this browser's memory while the window is open, and are gone the moment you close it.
-    The only place your content is ever sent is the AI provider you (a parent or teacher) choose and
-    connect with your own API key.
+    <strong>The short version:</strong> Curio has no backend of its own. Your chapter content, chat history,
+    and performance scores are stored securely encrypted in your browser's local storage so you don't lose
+    your progress, and can be deleted instantly at any time. The only place your content is ever sent is the
+    AI provider you (a parent or teacher) choose and connect with your own API key.
   </div>
 
   <h2>1. What Curio is</h2>
@@ -63,11 +63,11 @@
   <h2>2. What data exists, and where it lives</h2>
   <table>
     <tr><th>Data</th><th>Where it lives</th><th>When it's deleted</th></tr>
-    <tr><td>Uploaded chapter content (photos, text, extracted pages)</td><td>In-memory in the open popup window only</td><td>Immediately when the window is closed</td></tr>
-    <tr><td>Chat history for the current chapter</td><td>In-memory only</td><td>Immediately when the window is closed</td></tr>
-    <tr><td>Settings (age, language, AI provider, model, optional PIN hash)</td><td><code>chrome.storage.local</code> on this device</td><td>When cleared in Settings, or the extension is removed</td></tr>
-    <tr><td>Your AI provider API key</td><td><code>chrome.storage.local</code> on this device, never synced</td><td>"Clear key" in Settings, or extension removal</td></tr>
-    <tr><td>Progress record: past quiz scores and short topic labels (e.g. "fractions") per chapter title</td><td><code>chrome.storage.local</code> on this device</td><td>Extension removal (no in-app clear yet)</td></tr>
+    <tr><td>Uploaded chapter content (photos, text, extracted pages) and Vector database chunks</td><td>Encrypted locally in <code>chrome.storage.local</code> using AES-GCM-256</td><td>When manually deleted in the library, discarded in Chat, or automatically pruned to fit the 5-session limit</td></tr>
+    <tr><td>Chat history for the current chapter</td><td>Encrypted locally in <code>chrome.storage.local</code> using AES-GCM-256</td><td>When manually deleted in the library, discarded in Chat, or automatically pruned to fit the 5-session limit</td></tr>
+    <tr><td>Settings (age, language, AI provider, model, optional PIN hash)</td><td>Plaintext in <code>chrome.storage.local</code> on this device</td><td>When cleared in Settings, or the extension is removed</td></tr>
+    <tr><td>Your AI provider API key</td><td>Plaintext in <code>chrome.storage.local</code> on this device, never synced</td><td>"Clear key" in Settings, or extension removal</td></tr>
+    <tr><td>Progress record: past quiz scores and short topic labels per chapter title</td><td>Encrypted locally in <code>chrome.storage.local</code> using AES-GCM-256</td><td>"Clear Assessment History" in the Dashboard, or extension removal</td></tr>
   </table>
   <p>Nothing in the table above is ever sent to a server operated by us, because we do not operate one.</p>
 
@@ -75,7 +75,7 @@
   <p>
     When you upload a chapter or ask a question, Curio sends the relevant chapter content and your
     question directly from your browser to the AI provider you selected in Settings — currently OpenAI,
-    Anthropic, or Google Gemini. We do not see or intercept this traffic; it goes straight from your
+    Anthropic, Google Gemini, or OpenRouter. We do not see or intercept this traffic; it goes straight from your
     browser to their API using the key you provided.
   </p>
   <p>Please review your chosen provider's own privacy policy and terms, since their data retention and
@@ -84,6 +84,7 @@
     <li>OpenAI — <a href="https://openai.com/policies/privacy-policy" target="_blank" rel="noreferrer">Privacy Policy</a> · <a href="https://openai.com/policies/terms-of-use" target="_blank" rel="noreferrer">Terms</a></li>
     <li>Anthropic — <a href="https://www.anthropic.com/legal/privacy" target="_blank" rel="noreferrer">Privacy Policy</a> · <a href="https://www.anthropic.com/legal/consumer-terms" target="_blank" rel="noreferrer">Terms</a></li>
     <li>Google Gemini — <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">Privacy Policy</a> · <a href="https://ai.google.dev/gemini-api/terms" target="_blank" rel="noreferrer">Terms</a></li>
+    <li>OpenRouter — <a href="https://openrouter.ai/privacy" target="_blank" rel="noreferrer">Privacy Policy</a> · <a href="https://openrouter.ai/terms" target="_blank" rel="noreferrer">Terms</a></li>
   </ul>
   <p>Where a provider offers a no-training / zero-retention option for API traffic, we recommend it,
   especially for younger students.</p>
@@ -111,16 +112,18 @@
   <ul>
     <li>All communication with your AI provider happens over HTTPS.</li>
     <li>Your API key is stored only in <code>chrome.storage.local</code>, never synced across devices, and never logged.</li>
+    <li>Your active session extracts and assessment records are fully encrypted on disk using industry-standard AES-GCM-256.</li>
     <li>The extension requests access only to the specific AI provider domains and the model-weights host — nothing broader.</li>
     <li>No remote code execution: the extension runs no dynamically fetched scripts.</li>
   </ul>
 
   <h2>7. Your controls</h2>
   <ul>
+    <li><strong>Discard session</strong> (Chat header) — deletes the active encrypted session content and chunks from local storage immediately.</li>
+    <li><strong>Clear Assessment History</strong> (Dashboard) — deletes all encrypted quiz score trends and weak topic histories.</li>
     <li><strong>Clear key</strong> (Settings) — deletes your stored API key immediately.</li>
-    <li><strong>Clear chapter</strong> (Settings) — ends the current session and returns to Upload.</li>
-    <li><strong>Close the window</strong> — immediately discards all chapter content and chat history.</li>
-    <li><strong>Remove the extension</strong> — deletes all locally stored settings and progress records.</li>
+    <li><strong>Clear chapter</strong> (Settings) — ends the session, deletes the active session, and returns to Upload.</li>
+    <li><strong>Remove the extension</strong> — deletes all locally stored settings, keys, and progress records.</li>
   </ul>
 
   <h2>8. Changes to this policy</h2>
