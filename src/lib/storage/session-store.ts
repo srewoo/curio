@@ -4,11 +4,14 @@ import { encryptSession, decryptSession } from '@/lib/util/crypto';
 
 const CURRENT_SESSION_KEY = 'curio.currentSessionKey';
 const SAVED_SESSIONS_LIST_KEY = 'curio.savedSessionsList';
-const MAX_SESSIONS = 5;
+// unlimitedStorage lifts the 10 MB quota; 20 keeps the library manageable.
+const MAX_SESSIONS = 20;
 
 export interface SavedSessionInfo {
   readonly key: string;
   readonly updatedAt: string;
+  readonly title?: string; // absent on entries saved by older versions
+  readonly bookKey?: string; // set when the chapter came from a saved book
 }
 
 export interface SerializedSession {
@@ -17,6 +20,7 @@ export interface SerializedSession {
   readonly history: readonly ChatTurn[];
   readonly turnCount: number;
   readonly spentUsd: number;
+  readonly bookKey?: string;
   readonly chunks: readonly {
     readonly id: string;
     readonly text: string;
@@ -33,6 +37,7 @@ export interface RestoredSession {
   readonly history: readonly ChatTurn[];
   readonly turnCount: number;
   readonly spentUsd: number;
+  readonly bookKey?: string;
 }
 
 function normalizeKey(title: string): string {
@@ -41,6 +46,11 @@ function normalizeKey(title: string): string {
 
 function sessionKeyFor(chapterKey: string): string {
   return `curio.session.${chapterKey}`;
+}
+
+export async function listSavedSessions(): Promise<SavedSessionInfo[]> {
+  if (typeof chrome === 'undefined' || !chrome.storage?.local) return [];
+  return getSavedSessionsList();
 }
 
 async function getSavedSessionsList(): Promise<SavedSessionInfo[]> {
@@ -59,7 +69,8 @@ export async function saveActiveSession(
   history: readonly ChatTurn[],
   turnCount: number,
   spentUsd: number,
-  store: VectorStore
+  store: VectorStore,
+  bookKey?: string,
 ): Promise<void> {
   if (typeof chrome === 'undefined' || !chrome.storage?.local) return;
 
@@ -71,6 +82,7 @@ export async function saveActiveSession(
     history,
     turnCount,
     spentUsd,
+    bookKey,
     chunks: chunks.map((c) => ({
       id: c.id,
       text: c.text,
@@ -91,7 +103,7 @@ export async function saveActiveSession(
 
     let list = await getSavedSessionsList();
     list = list.filter((s) => s.key !== chapterKey);
-    list.unshift({ key: chapterKey, updatedAt: new Date().toISOString() });
+    list.unshift({ key: chapterKey, updatedAt: new Date().toISOString(), title, bookKey });
 
     if (list.length > MAX_SESSIONS) {
       const toRemove = list.slice(MAX_SESSIONS);
@@ -152,6 +164,7 @@ export async function loadSessionByKey(chapterKey: string): Promise<RestoredSess
       history: session.history,
       turnCount: session.turnCount,
       spentUsd: session.spentUsd,
+      bookKey: session.bookKey,
     };
   } catch (err) {
     console.error('[Curio] Failed to load session for key:', chapterKey, err);
@@ -210,6 +223,8 @@ export async function renameSessionByKey(chapterKey: string, newTitle: string): 
     const newPlaintext = JSON.stringify(updatedSession);
     const newCiphertext = await encryptSession(newPlaintext);
     await chrome.storage.local.set({ [sessionKey]: newCiphertext });
+    const list = await getSavedSessionsList();
+    await saveSavedSessionsList(list.map((s) => (s.key === chapterKey ? { ...s, title: newTitle } : s)));
   } catch (err) {
     console.error('[Curio] Failed to rename session for key:', chapterKey, err);
   }

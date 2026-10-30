@@ -3,8 +3,18 @@
 
 export const INGEST_LIMITS = {
   maxFiles: 10, // PRD §6.2
-  maxTotalBytes: 25 * 1024 * 1024, // 25 MB, PRD §6.2
-  acceptedExtensions: ['jpg', 'jpeg', 'png', 'webp', 'pdf', 'docx', 'txt'] as const,
+  // Books (PDF/EPUB) and recordings are large; text-layer PDFs and EPUBs cost
+  // no vision calls, so size is bounded by memory, not spend.
+  maxTotalBytes: 200 * 1024 * 1024,
+  // Scanned (image) pages each cost a vision call — cap per extraction run.
+  maxVisionPages: 60,
+  maxPages: 2000,
+  // Below this many chars a PDF page's text layer is treated as a scan.
+  pdfTextMinChars: 200,
+  acceptedExtensions: [
+    'jpg', 'jpeg', 'png', 'webp', 'pdf', 'docx', 'txt', 'epub',
+    'mp4', 'webm', 'mov', 'm4v', 'mp3', 'm4a', 'wav', 'ogg', 'oga', 'aac',
+  ] as const,
   acceptedMimePrefixes: ['image/'] as const,
 } as const;
 
@@ -29,6 +39,24 @@ export const PUZZLE = {
 export const SAFETY = {
   // Second-pass safety check applies at/below this age (PRD §6.7, TRD D6).
   secondPassAgeGate: 10,
+} as const;
+
+// On-device transcription for video/audio inputs (src/lib/ingest/transcribe.ts).
+export const MEDIA = {
+  maxMinutes: 45,
+  sampleRate: 16_000,
+  chunkSec: 30,
+  strideSec: 5,
+  englishModel: 'Xenova/whisper-tiny.en',
+  multilingualModel: 'Xenova/whisper-tiny',
+} as const;
+
+export const WEB_SEARCH = {
+  maxSearches: 2, // per answer — bounds cost and latency
+  maxSources: 5,
+  // Rough per-answer search fee (providers charge ~$0.01–0.03 per search on
+  // top of tokens) so web answers count against the session budget.
+  feeEstimateUsd: 0.02,
 } as const;
 
 export const RETRY = {

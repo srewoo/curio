@@ -21,12 +21,18 @@ describe('validateSelection (PRD §6.2/§6.9)', () => {
   });
 
   it('rejects an unsupported extension', () => {
-    expect(validateSelection([file('movie.mp4')]).ok).toBe(false);
-    expect(isAcceptedFile(file('movie.mp4'))).toBe(false);
+    expect(validateSelection([file('setup.exe')]).ok).toBe(false);
+    expect(isAcceptedFile(file('setup.exe'))).toBe(false);
+  });
+
+  it('accepts books and recordings', () => {
+    expect(validateSelection([file('book.epub'), file('lesson.mp4'), file('talk.m4a')]).ok).toBe(true);
   });
 
   it('rejects over the total size limit', () => {
-    expect(validateSelection([file('big.pdf', INGEST_LIMITS.maxTotalBytes + 1)]).ok).toBe(false);
+    const big = file('big.pdf');
+    Object.defineProperty(big, 'size', { value: INGEST_LIMITS.maxTotalBytes + 1 });
+    expect(validateSelection([big]).ok).toBe(false);
   });
 
   it('categorizes by extension', () => {
@@ -34,5 +40,8 @@ describe('validateSelection (PRD §6.2/§6.9)', () => {
     expect(extensionCategory(file('a.docx'))).toBe('docx');
     expect(extensionCategory(file('a.txt'))).toBe('txt');
     expect(extensionCategory(file('a.png'))).toBe('image');
+    expect(extensionCategory(file('a.epub'))).toBe('epub');
+    expect(extensionCategory(file('a.MP4'))).toBe('media');
+    expect(extensionCategory(file('a.mp3'))).toBe('media');
   });
 });

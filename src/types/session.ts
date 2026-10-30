@@ -27,6 +27,8 @@ export interface FollowUp {
   readonly text: string;
 }
 
+import type { ErrorKind } from './mastery';
+
 export interface ChatTurn {
   readonly id: string;
   readonly role: ChatRole;
@@ -36,6 +38,12 @@ export interface ChatTurn {
   // True if a pure-numeric equality in this answer failed arithmetic
   // verification (src/lib/math/verify.ts) — surfaced, never auto-corrected.
   readonly arithmeticFlag?: boolean;
+  // Set when the tutor turn is the reply to an "explain it back" attempt.
+  readonly explainScore?: number;
+  // Set when the answer came from the web (not the chapter).
+  readonly webSources?: readonly { readonly title: string; readonly url: string }[];
+  // Gemini only: Google's Search Suggestions markup, shown in a sandboxed frame.
+  readonly searchEntryHtml?: string;
 }
 
 export type PuzzleKind = 'mcq' | 'fill-blank' | 'true-false';
@@ -46,6 +54,7 @@ export interface Puzzle {
   readonly choices: readonly string[]; // empty for fill-blank
   readonly correctIndex: number; // index into choices; 0/1 for true-false
   readonly explanation: string;
+  readonly conceptId?: string;
 }
 
 export interface ChapterSummary {
@@ -64,6 +73,7 @@ export interface AssessmentQuestion {
   readonly choices: readonly string[]; // [] for text questions
   readonly correctIndex: number; // -1 for text questions
   readonly rubric: string; // what a good text answer contains; '' for mcq
+  readonly conceptId?: string; // which chapter concept this question checks
 }
 
 export interface AssessmentAnswer {
@@ -77,6 +87,7 @@ export interface GradedItem {
   readonly answer: AssessmentAnswer;
   readonly score: number; // 0..1
   readonly feedback: string;
+  readonly errorKind?: ErrorKind; // why a missed answer missed (text questions)
 }
 
 export interface AssessmentResult {

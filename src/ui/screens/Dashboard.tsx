@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useCurio } from '@/state/store';
 import { Icon } from '@/ui/components/Icon';
 import type { ChapterProgress } from '@/types/progress';
+import { LearningPanel } from '@/ui/components/LearningPanel';
 
 export function Dashboard(): JSX.Element {
   const { recentProgress, backToLibrary, clearProgress } = useCurio();
@@ -89,15 +90,19 @@ export function Dashboard(): JSX.Element {
       <div className="flex items-center justify-between mb-5">
         <div>
           <h1 className="text-xl font-medium tracking-tight">Performance Dashboard</h1>
-          <p className="text-xs text-ink-3">Local-only encrypted tracking of your learning progress</p>
+          <p className="text-xs text-ink-3">
+            Local-only encrypted tracking of your learning progress
+            <span className="hidden print:inline"> · printed {new Date().toLocaleDateString()}</span>
+          </p>
         </div>
-        <button 
-          className="curio-btn py-1.5 px-3 text-xs" 
-          onClick={backToLibrary}
-          title="Back to library"
-        >
-          <Icon name="book" size={13} /> Library
-        </button>
+        <div className="flex gap-2 print:hidden">
+          <button className="curio-btn py-1.5 px-3 text-xs" onClick={() => window.print()} title="Print or save a progress report as PDF">
+            <Icon name="file" size={13} /> Print report
+          </button>
+          <button className="curio-btn py-1.5 px-3 text-xs" onClick={backToLibrary} title="Back to library">
+            <Icon name="book" size={13} /> Library
+          </button>
+        </div>
       </div>
 
       {/* Aggregate Stats Cards */}
@@ -117,6 +122,8 @@ export function Dashboard(): JSX.Element {
           </div>
         </div>
       </div>
+
+      <LearningPanel refreshKey={recentProgress} />
 
       {/* Progression List */}
       <div className="flex-1 overflow-y-auto pr-1">
@@ -208,7 +215,7 @@ export function Dashboard(): JSX.Element {
 
       {/* Footer / Reset action */}
       {totalChapters > 0 && (
-        <div className="mt-4 pt-3 border-t border-line flex items-center justify-between">
+        <div className="mt-4 pt-3 border-t border-line flex items-center justify-between print:hidden">
           {!confirmReset ? (
             <button 
               className="text-[11px] text-ink-3 hover:text-red-ink flex items-center gap-1 cursor-pointer transition-colors"

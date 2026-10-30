@@ -7,16 +7,19 @@ import { Icon, type IconName } from '@/ui/components/Icon';
 // actually runs them: read pages, prepare the reader (embedder warm-up),
 // build tutor (chunk + embed). Maps to the pipeline's phases.
 const STEPS: { key: IngestPhase; label: string; icon: IconName }[] = [
+  { key: 'opening', label: 'Opening your files', icon: 'file' },
   { key: 'reading', label: 'Reading pages', icon: 'check' },
   { key: 'preparing', label: 'Preparing the reader', icon: 'eye' },
   { key: 'indexing', label: 'Building tutor', icon: 'clock' },
 ];
 
-const ORDER: Record<IngestPhase, number> = { reading: 0, preparing: 1, indexing: 2 };
+// Transcribing replaces "opening" for recordings (shown under the same row).
+const ORDER: Record<IngestPhase, number> = { opening: 0, transcribing: 0, reading: 1, preparing: 2, indexing: 3 };
+const LABEL_OVERRIDE: Partial<Record<IngestPhase, string>> = { transcribing: 'Listening to the recording' };
 
 export function Ingesting(): JSX.Element {
   const { ingestProgress } = useCurio();
-  const p: IngestProgress = ingestProgress ?? { phase: 'reading', done: 0, total: 1 };
+  const p: IngestProgress = ingestProgress ?? { phase: 'opening', done: 0, total: 1 };
   const current = ORDER[p.phase];
 
   return (
@@ -24,7 +27,8 @@ export function Ingesting(): JSX.Element {
       <Brand tag="Reading your chapter…" />
       <h1 className="text-xl font-medium tracking-tight mb-1.5">Building your tutor</h1>
       <p className="text-sm text-ink-2 leading-relaxed mb-5">
-        Curio is reading your pages and building the tutor. This takes about a minute.
+        Curio is reading your pages and building the tutor. This takes about a minute — longer for recordings, which
+        are transcribed privately on this device.
       </p>
 
       <div className="flex flex-col gap-3 mt-4">
@@ -36,7 +40,7 @@ export function Ingesting(): JSX.Element {
               <div className={`w-5 h-5 rounded-full flex items-center justify-center ${badge(state)}`}>
                 <Icon name={step.icon} size={12} />
               </div>
-              <div className="text-ink min-w-[140px]">{step.label}</div>
+              <div className="text-ink min-w-[170px]">{i === current ? LABEL_OVERRIDE[p.phase] ?? step.label : step.label}</div>
               <div className="flex-1 h-1 bg-[#EAE4D2] rounded overflow-hidden">
                 <div className="h-full bg-sage transition-all" style={{ width: `${pct}%` }} />
               </div>

@@ -53,16 +53,33 @@ export interface VisionRequest {
   readonly maxTokens?: number;
 }
 
+// Provider-native web search (Anthropic web_search tool, OpenAI Responses
+// web_search, Gemini google_search, OpenRouter web plugin) — still a call to
+// the selected provider's API only; no extra host, no backend.
+export interface WebSearchRequest {
+  readonly kind: 'webSearch';
+  readonly provider: ProviderId;
+  readonly model: string;
+  readonly system: string;
+  readonly question: string;
+  readonly maxTokens?: number;
+}
+
+export interface WebSource {
+  readonly title: string;
+  readonly url: string;
+}
+
 export interface ValidateKeyRequest {
   readonly kind: 'validateKey';
   readonly provider: ProviderId;
   readonly model: string;
 }
 
-export type BrokerRequest = ChatRequest | VisionRequest | ValidateKeyRequest;
+export type BrokerRequest = ChatRequest | VisionRequest | ValidateKeyRequest | WebSearchRequest;
 
 export type BrokerResponse =
-  | { readonly ok: true; readonly text: string; readonly usage: LlmUsage }
+  | { readonly ok: true; readonly text: string; readonly usage: LlmUsage; readonly sources?: readonly WebSource[]; readonly searchEntryHtml?: string }
   | { readonly ok: false; readonly error: BrokerError };
 
 // Streaming chat is delivered over a long-lived Port named `STREAM_PORT`.

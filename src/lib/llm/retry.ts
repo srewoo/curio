@@ -14,7 +14,9 @@ function delayFor(attempt: number): number {
 
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
-export async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
+// canRetry lets a caller veto retries once a retry would be unsafe (e.g. a
+// stream that has already emitted text the user has seen).
+export async function withRetry<T>(fn: () => Promise<T>, canRetry: () => boolean = () => true): Promise<T> {
   let lastErr: unknown;
   for (let attempt = 0; attempt < RETRY.maxAttempts; attempt++) {
     try {
@@ -22,7 +24,7 @@ export async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
     } catch (err) {
       lastErr = err;
       const code = err instanceof AdapterError ? err.code : 'unknown';
-      if (!RETRYABLE.has(code) || attempt === RETRY.maxAttempts - 1) throw err;
+      if (!RETRYABLE.has(code) || !canRetry() || attempt === RETRY.maxAttempts - 1) throw err;
       await sleep(delayFor(attempt));
     }
   }

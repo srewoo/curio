@@ -2,6 +2,7 @@ import { marked } from 'marked';
 import katex from 'katex';
 import 'katex/dist/contrib/mhchem.mjs'; // \ce{...} chemistry support
 import dompurify from 'dompurify';
+import { citationsToHtml } from '@/lib/rag/citations';
 
 let DOMPurify = dompurify;
 if (typeof window === 'undefined') {
@@ -71,6 +72,6 @@ function extractMath(md: string): { text: string; blocks: string[] } {
 export function markdownToHtml(md: string): string {
   const { text, blocks } = extractMath(md);
   let html = marked.parse(text) as string;
-  html = html.replace(/@@CURIOMATH(\d+)@@/g, (_m, i: string) => blocks[Number(i)] ?? '');
+  html = citationsToHtml(html.replace(/@@CURIOMATH(\d+)@@/g, (_m, i: string) => blocks[Number(i)] ?? ''));
   return DOMPurify.sanitize(html, { USE_PROFILES: { html: true, mathMl: true, svg: true, svgFilters: true } });
 }

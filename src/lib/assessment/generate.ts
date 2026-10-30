@@ -4,6 +4,8 @@ import type { AssessmentQuestion, Chunk } from '@/types/session';
 import { callBroker } from '@/lib/llm/client';
 import { contextFromChunks } from '@/lib/rag/prompt';
 import { extractJson } from '@/lib/util/json';
+import type { Concept } from '@/types/mastery';
+import { conceptCatalog, knownConceptId } from '@/lib/mastery/extract';
 
 // Generate the final assessment from a broad sample of the chapter (PRD progress
 // feature). MCQs + short-answer text questions, grounded only in context.
@@ -22,6 +24,7 @@ const rawSchema = z.array(
     choices: z.array(z.string()).default([]),
     correctIndex: z.number().int().default(-1),
     rubric: z.string().default(''),
+    concept: z.string().optional(),
   }),
 );
 
@@ -48,18 +51,25 @@ export async function generateAssessment(
   chunks: readonly Chunk[],
   spec: AssessmentSpec = DEFAULT_SPEC,
   focusTopics: readonly string[] = [],
+  concepts: readonly Concept[] = [],
 ): Promise<AssessmentQuestion[]> {
   // Retention loop: weight the quiz toward topics the student struggled with.
   const focus =
     focusTopics.length > 0
       ? `\n\nThe student previously found these areas hard — include at least one question on them:\n- ${focusTopics.slice(0, 6).join('\n- ')}`
       : '';
+  // Tag each question with the concept it checks so grading feeds per-concept
+  // mastery + spaced review.
+  const tagging =
+    concepts.length > 0
+      ? `\n\nChapter concepts (id: name):\n${conceptCatalog(concepts)}\nAdd "concept": the id of the concept each question checks. Spread questions across concepts.`
+      : '';
   const res = await callBroker({
     kind: 'chat',
     provider,
     model,
     system: systemPrompt(spec, age),
-    messages: [{ role: 'user', content: `${contextFromChunks(chunks)}${focus}\n\nWrite the quiz now.` }],
+    messages: [{ role: 'user', content: `${contextFromChunks(chunks)}${focus}${tagging}\n\nWrite the quiz now.` }],
     maxTokens: 1200,
     temperature: 0.4,
   });
@@ -76,5 +86,6 @@ export async function generateAssessment(
       choices: q.kind === 'mcq' ? q.choices.slice(0, 4) : [],
       correctIndex: q.kind === 'mcq' ? q.correctIndex : -1,
       rubric: q.kind === 'text' ? q.rubric : '',
+      conceptId: knownConceptId(concepts, q.concept),
     }));
 }

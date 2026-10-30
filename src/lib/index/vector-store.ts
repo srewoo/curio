@@ -34,6 +34,11 @@ export class VectorStore {
     }
   }
 
+  // Chunks by id, in the given order (citation look-ups for a past turn).
+  byIds(ids: readonly string[]): Chunk[] {
+    return ids.flatMap((id) => this.chunks.find((c) => c.id === id) ?? []);
+  }
+
   // A spread of up to k chunks across the whole chapter (for a final assessment
   // that should cover all the material, not just what was recently discussed).
   sample(k: number): Chunk[] {

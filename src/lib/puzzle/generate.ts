@@ -4,6 +4,8 @@ import type { Puzzle, RetrievedChunk } from '@/types/session';
 import { callBroker } from '@/lib/llm/client';
 import { buildContextBlock } from '@/lib/rag/prompt';
 import { extractJson } from '@/lib/util/json';
+import type { Concept } from '@/types/mastery';
+import { conceptCatalog, knownConceptId } from '@/lib/mastery/extract';
 
 // Quick-check puzzle generated from retrieved context (PRD §6.5).
 const puzzleSchema = z.object({
@@ -12,6 +14,7 @@ const puzzleSchema = z.object({
   choices: z.array(z.string()).max(4),
   correctIndex: z.number().int().min(0),
   explanation: z.string().min(1),
+  concept: z.string().optional(),
 });
 
 const PUZZLE_SYSTEM =
@@ -29,16 +32,19 @@ export async function generatePuzzle(
   age: number,
   retrieved: readonly RetrievedChunk[],
   focusTopics: readonly string[] = [],
+  concepts: readonly Concept[] = [],
 ): Promise<Puzzle | null> {
   const focus =
     focusTopics.length > 0 ? ` If it fits the context, check one of these tricky areas: ${focusTopics.slice(0, 3).join('; ')}.` : '';
+  const tagging =
+    concepts.length > 0 ? `\nChapter concepts (id: name):\n${conceptCatalog(concepts)}\nAdd "concept": the id this check tests.` : '';
   const res = await callBroker({
     kind: 'chat',
     provider,
     model,
     system: PUZZLE_SYSTEM,
     messages: [
-      { role: 'user', content: `${buildContextBlock(retrieved)}\n\nStudent age: ${age}. Write the check now.${focus}` },
+      { role: 'user', content: `${buildContextBlock(retrieved)}\n\nStudent age: ${age}. Write the check now.${focus}${tagging}` },
     ],
     maxTokens: 400,
     temperature: 0.5,
@@ -46,7 +52,7 @@ export async function generatePuzzle(
   if (!res.ok) return null;
   const parsed = puzzleSchema.safeParse(extractJson(res.text));
   if (!parsed.success) return null;
-  const p = parsed.data;
+  const { concept, ...p } = parsed.data;
   if (p.correctIndex >= Math.max(p.choices.length, 1)) return null;
-  return p;
+  return { ...p, conceptId: knownConceptId(concepts, concept) };
 }

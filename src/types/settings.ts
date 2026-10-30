@@ -14,6 +14,14 @@ export const settingsSchema = z.object({
   // Salted hash of the settings-lock PIN, never the PIN itself (PRD §6.8).
   pinHash: z.string().optional(),
   sessionBudgetUsd: z.number().positive().optional(),
+  // 'hints' = hint-first (guide, don't hand over homework answers);
+  // 'explain' = full worked answers. Unset → hints for minors (effectiveTutorMode).
+  tutorMode: z.enum(['hints', 'explain']).optional(),
+  // Opt-in: Chrome's speech recognition sends audio to Google for transcription.
+  voiceInput: z.boolean().optional(),
+  // Opt-in: when a question isn't in the chapter, answer via the provider's
+  // built-in web search (clearly labelled, sources shown). Off by default.
+  webSearch: z.boolean().optional(),
   // Adult consent to the chosen provider processing a child's content
   // (COPPA/GDPR-K, PRD §7.1a). Captured at setup / on provider change.
   consent: z
@@ -33,3 +41,8 @@ export const DEFAULT_SETTINGS: Settings = {
 
 // A minor per COPPA/GDPR-K posture (PRD §7.1a) — forces disclosures + 2nd pass.
 export const isMinorAge = (age: number): boolean => age < 13;
+
+export type TutorMode = 'hints' | 'explain';
+
+export const effectiveTutorMode = (s: Pick<Settings, 'tutorMode' | 'ageBand'>): TutorMode =>
+  s.tutorMode ?? (isMinorAge(s.ageBand) ? 'hints' : 'explain');

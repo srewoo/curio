@@ -1,7 +1,9 @@
 import { z } from 'zod';
 import { PROVIDERS } from '@/config/providers';
 import type { ChatRequest, LlmMessage, VisionRequest } from '@/types/messages';
-import { AdapterError, statusToCode, type LlmResult, type ProviderAdapter } from './provider';
+import { cleanSources } from './web-sources';
+import { AdapterError, postOk, statusToCode, type DeltaHandler, type LlmResult, type ProviderAdapter } from './provider';
+import { readSse } from './sse';
 
 // OpenAI Chat Completions adapter. Responses are zod-validated (CLAUDE.md §2).
 const BASE = PROVIDERS.openai.apiBase;
@@ -40,7 +42,93 @@ async function call(apiKey: string, body: unknown): Promise<LlmResult> {
   };
 }
 
+const chunkSchema = z.object({
+  choices: z.array(z.object({ delta: z.object({ content: z.string().nullish() }).partial().optional() })).optional(),
+  usage: z.object({ prompt_tokens: z.number(), completion_tokens: z.number() }).nullish(),
+});
+
+// Shared by OpenAI-compatible APIs (OpenRouter): accumulate delta.content and
+// take usage from the final chunk.
+export async function readChatCompletionStream(res: Response, onDelta: DeltaHandler): Promise<LlmResult> {
+  let text = '';
+  let usage = { inputTokens: 0, outputTokens: 0 };
+  await readSse(res, (data) => {
+    const c = chunkSchema.safeParse(data);
+    if (!c.success) return;
+    const piece = c.data.choices?.[0]?.delta?.content;
+    if (piece) {
+      text += piece;
+      onDelta(piece);
+    }
+    if (c.data.usage) usage = { inputTokens: c.data.usage.prompt_tokens, outputTokens: c.data.usage.completion_tokens };
+  });
+  return { text: text.trim(), usage };
+}
+
+const responsesSchema = z.object({
+  output: z.array(
+    z.object({
+      type: z.string(),
+      content: z
+        .array(
+          z.object({
+            type: z.string(),
+            text: z.string().optional(),
+            annotations: z.array(z.object({ type: z.string(), url: z.string().optional(), title: z.string().nullish() })).nullish(),
+          }),
+        )
+        .optional(),
+    }),
+  ),
+  usage: z.object({ input_tokens: z.number(), output_tokens: z.number() }).nullish(),
+});
+
 export const openaiAdapter: ProviderAdapter = {
+  // Responses API with the built-in web_search tool.
+  async webSearch(apiKey, req): Promise<LlmResult> {
+    const res = await postOk(
+      `${BASE}/v1/responses`,
+      {
+        headers: { 'content-type': 'application/json', authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({
+          model: req.model,
+          instructions: req.system,
+          input: req.question,
+          tools: [{ type: 'web_search' }],
+          max_output_tokens: req.maxTokens ?? 1024,
+        }),
+      },
+      'OpenAI',
+    );
+    const parsed = responsesSchema.safeParse(await res.json());
+    if (!parsed.success) throw new AdapterError('unknown', 'Unexpected OpenAI response shape.');
+    const parts = parsed.data.output.filter((o) => o.type === 'message').flatMap((o) => o.content ?? []);
+    return {
+      text: parts.filter((p) => p.type === 'output_text').map((p) => p.text ?? '').join('').trim(),
+      usage: { inputTokens: parsed.data.usage?.input_tokens ?? 0, outputTokens: parsed.data.usage?.output_tokens ?? 0 },
+      sources: cleanSources(parts.flatMap((p) => p.annotations ?? []).filter((a) => a.type === 'url_citation')),
+    };
+  },
+
+  async chatStream(apiKey, req, onDelta): Promise<LlmResult> {
+    const res = await postOk(
+      `${BASE}/v1/chat/completions`,
+      {
+        headers: { 'content-type': 'application/json', authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({
+          model: req.model,
+          temperature: req.temperature ?? 0.3,
+          max_tokens: req.maxTokens ?? 1024,
+          messages: toMessages(req.system, req.messages),
+          stream: true,
+          stream_options: { include_usage: true },
+        }),
+      },
+      'OpenAI',
+    );
+    return readChatCompletionStream(res, onDelta);
+  },
+
   async chat(apiKey, req: ChatRequest): Promise<LlmResult> {
     return call(apiKey, {
       model: req.model,

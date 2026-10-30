@@ -10,11 +10,11 @@ interface ShellProps {
 // Window frame matching design/mockups.html (.frame/.win/.titlebar/.screen).
 export function Shell({ children, onSettings, banner }: ShellProps): JSX.Element {
   return (
-    <div className="min-h-full bg-shell py-10 px-5">
+    <div className="min-h-full bg-shell py-10 px-5 print:bg-white print:p-0">
       <div className="max-w-[820px] mx-auto">
-        <div className="bg-paper-2 rounded-2xl p-2.5">
-          <div className="bg-paper rounded-[10px] border border-line overflow-hidden">
-            <div className="flex items-center gap-1.5 px-3 py-2 border-b border-line bg-paper-3">
+        <div className="bg-paper-2 rounded-2xl p-2.5 print:p-0 print:bg-white">
+          <div className="bg-paper rounded-[10px] border border-line overflow-hidden print:border-0">
+            <div className="flex items-center gap-1.5 px-3 py-2 border-b border-line bg-paper-3 print:hidden">
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#E8B4A6]" />
                 <span className="w-2.5 h-2.5 rounded-full bg-[#E8D2A6]" />
@@ -43,7 +43,9 @@ export function Shell({ children, onSettings, banner }: ShellProps): JSX.Element
             </div>
           </div>
         </div>
-        <Footer />
+        <div className="print:hidden">
+          <Footer />
+        </div>
       </div>
     </div>
   );
