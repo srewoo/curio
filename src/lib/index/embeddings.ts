@@ -1,5 +1,6 @@
 import { EMBEDDING } from '@/config/constants';
 import { lexicalEmbed } from './fallback-embed';
+import { loadTransformers } from '@/lib/ml/transformers';
 
 // Local embeddings via @xenova/transformers (PRD §6.3, TRD D3/D4). Weights are
 // fetched once and cached by the browser, NOT bundled. transformers.js is
@@ -24,23 +25,7 @@ export function getEmbeddingMode(): EmbeddingMode {
 }
 
 async function loadExtractor(): Promise<FeatureExtractor> {
-  const { pipeline, env } = await import('@xenova/transformers');
-  env.allowLocalModels = false;
-  try {
-    // Single-threaded, non-proxied WASM served from the EXTENSION ITSELF (not a
-    // CDN). This removes remote-wasm loading — the operation MV3's strict CSP is
-    // most likely to block — and keeps all runtime code first-party (TRD R1/R8).
-    const wasm = (env.backends as unknown as { onnx?: { wasm?: Record<string, unknown> } } | undefined)?.onnx?.wasm;
-    if (wasm) {
-      wasm.numThreads = 1;
-      wasm.proxy = false;
-      if (typeof chrome !== 'undefined' && chrome.runtime?.getURL) {
-        wasm.wasmPaths = chrome.runtime.getURL('ort/'); // bundled ort-wasm-simd.wasm
-      }
-    }
-  } catch {
-    /* backend shape may vary across versions; ignore */
-  }
+  const { pipeline } = await loadTransformers();
   const pipe = await pipeline('feature-extraction', EMBEDDING.modelId);
   return pipe as unknown as FeatureExtractor;
 }

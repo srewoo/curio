@@ -6,4 +6,7 @@ release/
 design/
 .playwright-mcp/
 release/
+webstore/test-results/
+playwright-report/
+brag-output/
 webstore/

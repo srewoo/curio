@@ -7,7 +7,9 @@ import { Rendered } from '@/ui/components/Rendered';
 // Final quiz (PRD progress feature): answer all questions, then submit for a
 // graded overall score. MCQs use choices; text questions use a short textarea.
 export function Assessment(): JSX.Element {
-  const { assessmentQuestions, assessmentBusy, submitAssessment, backToChat } = useCurio();
+  const { assessmentQuestions, assessmentBusy, submitAssessment, backToChat, assessmentKind } = useCurio();
+  const placement = assessmentKind === 'placement';
+  const title = placement ? 'What do you already know?' : 'Quick test';
   const [choices, setChoices] = useState<Record<string, number>>({});
   const [texts, setTexts] = useState<Record<string, string>>({});
 
@@ -29,7 +31,7 @@ export function Assessment(): JSX.Element {
   if (assessmentBusy && questions.length === 0) {
     return (
       <div>
-        <Brand title="Quick test" tag="Building your quiz…" icon="bulb" />
+        <Brand title={title} tag={placement ? 'Building a quick check…' : 'Building your quiz…'} icon="bulb" />
         <p className="text-sm text-ink-2">Curio is writing a few questions from your chapter…</p>
       </div>
     );
@@ -38,7 +40,7 @@ export function Assessment(): JSX.Element {
   if (questions.length === 0) {
     return (
       <div>
-        <Brand title="Quick test" icon="bulb" />
+        <Brand title={title} icon="bulb" />
         <p className="text-sm text-ink-2 mb-4">Couldn't build a quiz right now. Let's keep chatting instead.</p>
         <button className="curio-btn" onClick={backToChat}>Back to chat</button>
       </div>
@@ -47,7 +49,11 @@ export function Assessment(): JSX.Element {
 
   return (
     <div>
-      <Brand title="Quick test" tag={`${questions.length} questions`} icon="bulb" />
+      <Brand
+        title={title}
+        tag={placement ? `${questions.length} questions · no score — it's fine to pick "not sure"` : `${questions.length} questions`}
+        icon="bulb"
+      />
       <p className="text-sm text-ink-2 mb-5">Answer these to see how well you've understood the chapter.</p>
 
       <div className="flex flex-col gap-4">
@@ -89,7 +95,7 @@ export function Assessment(): JSX.Element {
       <div className="flex justify-between items-center mt-6">
         <button className="curio-btn" onClick={backToChat} disabled={assessmentBusy}>Cancel</button>
         <button className="curio-btn curio-btn-primary" onClick={submit} disabled={!allAnswered || assessmentBusy}>
-          {assessmentBusy ? 'Grading…' : 'See my score'}
+          {assessmentBusy ? 'Grading…' : placement ? 'Done' : 'See my score'}
         </button>
       </div>
     </div>

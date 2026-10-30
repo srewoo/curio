@@ -7,9 +7,11 @@ import { checkTopic } from '@/lib/safety/topic-filter';
 import { retrieve } from '@/lib/rag/retriever';
 import { generateFollowUps } from '@/lib/rag/retriever';
 import { buildChatMessages } from '@/lib/rag/prompt';
-import { buildTutorSystemPrompt } from '@/lib/safety/system-prompt';
+import { buildTutorSystemPrompt, buildWebSystemPrompt, type TutorPromptOptions } from '@/lib/safety/system-prompt';
 import { needsSecondPass, reviewIsSafe } from '@/lib/safety/second-pass';
-import { callBroker } from '@/lib/llm/client';
+import { callBroker, streamChatText } from '@/lib/llm/client';
+import { keepValidCitations } from '@/lib/rag/citations';
+import type { ChatRequest, WebSource } from '@/types/messages';
 import { hasArithmeticError } from '@/lib/math/verify';
 
 // One full grounded tutor turn (TRD §9). Encapsulates topic filter →
@@ -28,13 +30,23 @@ const PROBLEM_QUERY =
 export type AnswerResult =
   | { readonly kind: 'answer'; readonly text: string; readonly followUps: string[]; readonly retrieved: RetrievedChunk[]; readonly usage: LlmUsage; readonly arithmeticFlag: boolean }
   | { readonly kind: 'refusal'; readonly text: string; readonly retrieved: RetrievedChunk[] }
+  | { readonly kind: 'web'; readonly text: string; readonly sources: readonly WebSource[]; readonly usage: LlmUsage; readonly searchEntryHtml?: string }
   | { readonly kind: 'error'; readonly error: BrokerError };
+
+export interface AnswerOptions {
+  readonly tutor?: TutorPromptOptions;
+  // Live text as it streams. Ignored when the second-pass safety review applies:
+  // a young child must never see a draft before it has been reviewed.
+  readonly onText?: (soFar: string) => void;
+  readonly chapterTitle?: string;
+}
 
 export async function produceAnswer(
   settings: Settings,
   store: VectorStore,
   history: readonly ChatTurn[],
   userText: string,
+  opts: AnswerOptions = {},
 ): Promise<AnswerResult> {
   const topic = checkTopic(userText);
   if (!topic.allowed) return { kind: 'refusal', text: topic.redirect!, retrieved: [] };
@@ -43,22 +55,28 @@ export async function produceAnswer(
   // Explanatory questions must be grounded; problem-solving requests are allowed
   // through (answered via the chapter's methods) even if retrieval is weak.
   if (!grounded && !PROBLEM_QUERY.test(userText)) {
+    if (settings.webSearch) {
+      const web = await answerFromWeb(settings, userText, opts.chapterTitle ?? 'their chapter');
+      if (web) return web;
+    }
     return { kind: 'refusal', text: NOT_IN_CHAPTER, retrieved: chunks };
   }
 
-  const res = await callBroker({
+  const req: ChatRequest = {
     kind: 'chat',
     provider: settings.provider,
     model: settings.textModel,
-    system: buildTutorSystemPrompt(settings.ageBand, settings.language),
+    system: buildTutorSystemPrompt(settings.ageBand, settings.language, opts.tutor),
     messages: buildChatMessages(history, chunks, userText),
-    maxTokens: 700,
+    maxTokens: 900,
     temperature: 0.3,
-  });
+  };
+  const reviewed = needsSecondPass(settings.ageBand);
+  const res = opts.onText && !reviewed ? await streamChatText(req, opts.onText) : await callBroker(req);
   if (!res.ok) return { kind: 'error', error: res.error };
 
-  let text = res.text;
-  if (needsSecondPass(settings.ageBand) && !(await reviewIsSafe(settings.provider, text))) {
+  let text = keepValidCitations(res.text, new Set(chunks.map((c) => c.chunk.page)));
+  if (reviewed && !(await reviewIsSafe(settings.provider, text))) {
     text = UNSAFE_REDIRECT;
   }
 
@@ -68,4 +86,21 @@ export async function produceAnswer(
   // flag it, since an automatic "fix" could itself be wrong.
   const arithmeticFlag = hasArithmeticError(text);
   return { kind: 'answer', text, followUps, retrieved: chunks, usage: res.usage, arithmeticFlag };
+}
+
+// Parent-enabled web fallback. Any failure (search disabled for the key, model
+// without search support, empty result, unsafe draft) returns null so the
+// caller gives the normal "not in this chapter" reply.
+async function answerFromWeb(settings: Settings, question: string, chapterTitle: string): Promise<AnswerResult | null> {
+  const res = await callBroker({
+    kind: 'webSearch',
+    provider: settings.provider,
+    model: settings.textModel,
+    system: buildWebSystemPrompt(settings.ageBand, settings.language, chapterTitle),
+    question,
+    maxTokens: 700,
+  });
+  if (!res.ok || !res.text) return null;
+  if (needsSecondPass(settings.ageBand) && !(await reviewIsSafe(settings.provider, res.text))) return null;
+  return { kind: 'web', text: res.text, sources: res.sources ?? [], usage: res.usage, searchEntryHtml: res.searchEntryHtml };
 }

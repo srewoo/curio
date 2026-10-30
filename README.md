@@ -55,11 +55,21 @@ npm run dev          # vite dev server / HMR
 * **Math & LaTeX Integrity**: KaTeX MathML native rendering (saving bundle space) backed by a local `mathjs` **arithmetic verifier** that flags tutor math slips and limits assessment credit for invalid student calculations.
 * **Child Safety Measures**: Pre-filter RegExp blockages, dynamic age-based system prompting (under 9, 10-13, 14+), parental minors-consent screens, prompt-injection sanitization, and secondary LLM safety checks.
 * **Multi-chapter split detection** and ingest progress meters.
-* **38 unit tests pass**; typecheck + build clean.
+* **Learning engine** (`src/lib/mastery`): 4–8 key concepts extracted per chapter (fact / idea / skill) with flashcards; quiz questions and puzzles tagged by concept; a mastery score weighted toward recent answers that needs 3+ correct answers before "mastered"; spaced review on a fixed ladder per concept type; a toolbar badge for due reviews (`chrome.alarms`, built from due dates only, no chapter content).
+* **Hint-first tutoring** (default for under-13s): guides homework with hints; shows the full worked solution after two tries or when asked. **Explain it back**: the child explains a concept in their own words and gets graded feedback. Missed quiz answers are labelled with why (forgot / mixed up / used it wrong / small slip).
+* **Page citations** `[p. N]`: citations to pages that weren't retrieved are removed; clicking a chip opens the source passage.
+* **Native token streaming** for all four providers (SSE). Ages at or below the second-pass safety gate still get the full answer only after review.
+* **Read aloud** (`speechSynthesis`) and opt-in **voice input** (disclosed: Chrome sends audio to Google).
+* **More inputs**: EPUB (TOC → chapters), PDFs read from their text layer (vision only for scanned pages, rendered lazily) with bookmarks → chapters, video/audio transcribed **on-device** with Whisper (transformers.js), and **"Learn from the page you were reading"** via `activeTab` + `scripting` (no host permissions).
+* **Multi-chapter books**: pick a chapter before anything is read; the book is saved (encrypted) so any other chapter opens later without re-uploading. Library now lists every saved chapter (up to 20) plus books, with `unlimitedStorage`.
+* **Export & report**: chat → Markdown study sheet; Dashboard → printable/PDF progress report.
+* **Placement check**: on a new chapter, an optional one-question-per-concept check (with an honest "not sure" option) seeds mastery and the review schedule, so known material becomes review instead of teaching.
+* **Optional web search** (Settings, off by default, PIN-protected): questions the chapter doesn't cover can be answered via the provider's built-in search tool — Anthropic `web_search_20250305`, OpenAI Responses `web_search`, Gemini `google_search`, OpenRouter `web` plugin. Labelled "From the web", sources shown (https only), same topic filter + second-pass safety, and a per-search fee estimate counted in the session budget.
+* **Parent tools**: weekly summary + per-concept mastery bars on the Dashboard, an optional encrypted learner note, and the **Settings PIN lock** (forgot-PIN reset also clears the API key).
+* **Tests**: 89 unit tests (`npm test`) and 10 end-to-end tests (`npm run test:e2e`) that drive the built extension in Chromium with the AI provider mocked (`e2e/mock-provider.ts`) — covering upload → streamed cited answer, placement, library, EPUB/PDF books, web search on/off, PIN lock, export, and page capture.
 
 **Known follow-ups (tracked in TRD §16/§17):**
-- **Native token streaming.** The broker currently emits the full answer as one delta over the streaming Port; per-provider SSE streaming is a follow-up. The UI shows a "thinking…" state meanwhile.
-- **PIN settings-lock** util exists (`src/lib/util/pin.ts`) but isn't wired into the Settings UI yet (PRD §6.8).
+- **Review schedule** uses fixed intervals per concept type, not a fitted forgetting model (FSRS); `nextState` in `src/lib/mastery/scheduler.ts` is the only function that would need changing.
 - **Network-loss resumability** during ingest (PRD §6.9): per-page failures are handled; whole-ingest resume is not.
 
 ## Privacy

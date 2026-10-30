@@ -75,3 +75,18 @@
 .curio-prose math[display="block"] { margin: 6px 0; overflow-x: auto; }
 .curio-prose table { border-collapse: collapse; margin: 0 0 8px; font-size: 0.95em; }
 .curio-prose th, .curio-prose td { border: 1px solid #E5DEC9; padding: 4px 8px; text-align: left; }
+
+/* Page citation chips (src/lib/rag/citations.ts) */
+.curio-cite {
+  display: inline-block; margin-left: 3px; padding: 0 6px; border-radius: 999px;
+  font-size: 0.75em; line-height: 1.6; vertical-align: 1px; cursor: pointer;
+  background: #E1F5EE; color: #0F6E56; border: 1px solid #BFE6D6;
+}
+.curio-cite:hover, .curio-cite:focus-visible { background: #BFE6D6; outline: none; }
+
+/* Flashcard flip (Review screen) */
+.curio-card-flip { perspective: 1000px; }
+.curio-card-inner { transition: transform 0.35s; transform-style: preserve-3d; position: relative; }
+.curio-card-inner.flipped { transform: rotateY(180deg); }
+.curio-card-face { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.curio-card-back { position: absolute; inset: 0; transform: rotateY(180deg); }

@@ -41,3 +41,18 @@ export function streamChat(req: ChatRequest, handlers: StreamHandlers): () => vo
   port.postMessage({ type: 'start', req });
   return () => port.disconnect();
 }
+
+// Promise form of streamChat: onText receives the accumulated text so far.
+export function streamChatText(req: ChatRequest, onText: (soFar: string) => void): Promise<BrokerResponse> {
+  return new Promise((resolve) => {
+    let text = '';
+    streamChat(req, {
+      onDelta: (d) => {
+        text += d;
+        onText(text);
+      },
+      onDone: (usage) => resolve({ ok: true, text: text.trim(), usage }),
+      onError: (error) => resolve({ ok: false, error }),
+    });
+  });
+}

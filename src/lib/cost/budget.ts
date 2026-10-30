@@ -37,6 +37,11 @@ export class SessionBudget {
     return this.spent;
   }
 
+  // Flat fees not expressed in tokens (e.g. per-search charges).
+  addUsd(usd: number): void {
+    this.spent += usd;
+  }
+
   add(usage: LlmUsage, model: ModelOption): void {
     this.spent += usageCostUsd(usage, model);
   }

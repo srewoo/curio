@@ -9,6 +9,8 @@ import { Settings } from '@/ui/screens/Settings';
 import { Assessment } from '@/ui/screens/Assessment';
 import { Results } from '@/ui/screens/Results';
 import { Dashboard } from '@/ui/screens/Dashboard';
+import { Review } from '@/ui/screens/Review';
+import { ErrorBoundary } from '@/ui/components/ErrorBoundary';
 
 function Router(): JSX.Element {
   const { screen, openSettings, banner } = useCurio();
@@ -28,14 +30,17 @@ function Router(): JSX.Element {
       {screen === 'results' && <Results />}
       {screen === 'settings' && <Settings />}
       {screen === 'dashboard' && <Dashboard />}
+      {screen === 'review' && <Review />}
     </Shell>
   );
 }
 
 export function App(): JSX.Element {
   return (
-    <CurioProvider>
-      <Router />
-    </CurioProvider>
+    <ErrorBoundary>
+      <CurioProvider>
+        <Router />
+      </CurioProvider>
+    </ErrorBoundary>
   );
 }

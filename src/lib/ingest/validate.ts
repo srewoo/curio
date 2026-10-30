@@ -29,14 +29,25 @@ export function validateSelection(files: readonly File[]): ValidationResult {
     return { ok: false, error: `That's over the ${mb} MB total limit.` };
   }
   const bad = files.find((f) => !isAcceptedFile(f));
-  if (bad) return { ok: false, error: `Can't read "${bad.name}". Use jpg, png, webp, pdf, docx, or txt.` };
+  if (bad) return { ok: false, error: `Can't read "${bad.name}". Use photos, PDF, EPUB, Word, text, or a video/audio file.` };
   return { ok: true };
 }
 
-export function extensionCategory(file: File): 'image' | 'pdf' | 'docx' | 'txt' {
+export type FileCategory = 'image' | 'pdf' | 'docx' | 'txt' | 'epub' | 'media';
+
+const MEDIA_EXTS = new Set(['mp4', 'webm', 'mov', 'm4v', 'mp3', 'm4a', 'wav', 'ogg', 'oga', 'aac']);
+
+export function extensionCategory(file: File): FileCategory {
   const ext = extensionOf(file.name);
-  if (ext === 'pdf') return 'pdf';
-  if (ext === 'docx') return 'docx';
-  if (ext === 'txt') return 'txt';
+  if (ext === 'pdf' || ext === 'docx' || ext === 'txt' || ext === 'epub') return ext;
+  if (MEDIA_EXTS.has(ext)) return 'media';
   return 'image';
+}
+
+// An ingest problem with a message meant for the user (shown as the banner).
+export class IngestLimitError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'IngestLimitError';
+  }
 }

@@ -5,10 +5,17 @@ import { clearApiKey, setApiKey } from '@/lib/storage/settings-store';
 import { callBroker } from '@/lib/llm/client';
 import { useCurio } from '@/state/store';
 import { Brand } from '@/ui/components/Brand';
+import { PinGate } from '@/ui/components/PinGate';
+import { effectiveTutorMode, type TutorMode } from '@/types/settings';
+import { hashPin } from '@/lib/util/pin';
+import { LEARNER_NOTE_MAX } from '@/lib/profile/store';
 
 // Settings (mockup screen 5). Age, language, provider, models, API key.
 export function Settings(): JSX.Element {
-  const { settings, saveSettings, closeSettings, clearChapter } = useCurio();
+  const { settings, saveSettings, closeSettings, clearChapter, learnerNote, saveLearnerNote } = useCurio();
+  const [unlocked, setUnlocked] = useState(!settings.pinHash);
+  const [note, setNote] = useState(learnerNote);
+  const [newPin, setNewPin] = useState('');
   // One model drives both text + vision; coerce any older text-only saved value.
   const [draft, setDraft] = useState<SettingsModel>(() => {
     const model = coerceUnifiedModelId(settings.provider, settings.textModel);
@@ -37,6 +44,10 @@ export function Settings(): JSX.Element {
 
   async function save(): Promise<void> {
     setStatus(null);
+    if (newPin && !/^\d{4,6}$/.test(newPin)) {
+      setStatus('The PIN must be 4 to 6 digits.');
+      return;
+    }
     if (needsConsent && !reConsented) {
       setStatus(`Please confirm consent for ${providerLabel} before saving.`);
       return;
@@ -53,8 +64,22 @@ export function Settings(): JSX.Element {
     const consent = needsConsent
       ? { provider: draft.provider, acceptedAt: new Date().toISOString() }
       : settings.consent;
-    await saveSettings({ ...draft, consent });
+    const pinHash = newPin ? await hashPin(newPin) : draft.pinHash;
+    if (note !== learnerNote) await saveLearnerNote(note);
+    await saveSettings({ ...draft, consent, pinHash });
   }
+
+  async function forgotPin(): Promise<void> {
+    await clearApiKey();
+    await saveSettings({ ...settings, pinHash: undefined });
+  }
+
+  if (!unlocked && settings.pinHash) {
+    return <PinGate pinHash={settings.pinHash} onUnlock={() => setUnlocked(true)} onCancel={closeSettings} onForgot={forgotPin} />;
+  }
+
+  const mode = effectiveTutorMode(draft);
+  const modeLabel: Record<TutorMode, string> = { hints: 'Hints first', explain: 'Full answers' };
 
   return (
     <div>
@@ -72,6 +97,59 @@ export function Settings(): JSX.Element {
         <select className="curio-input min-w-[160px]" value={draft.language} onChange={(e) => update({ language: e.target.value })}>
           {LANGUAGES.map((l) => <option key={l.code} value={l.code}>{l.label}</option>)}
         </select>
+      </Row>
+
+      <Row label="Tutor style" hint={mode === 'hints' ? 'Guides homework with hints; shows the full answer after two tries or when asked.' : 'Explains and solves problems fully, step by step.'}>
+        <div className="flex gap-1.5">
+          {(['hints', 'explain'] as const).map((m) => (
+            <button key={m} className={m === mode ? 'curio-pill curio-pill-on' : 'curio-pill'} onClick={() => update({ tutorMode: m })}>{modeLabel[m]}</button>
+          ))}
+        </div>
+      </Row>
+
+      <Row label="Voice input" hint="Speak questions instead of typing. Chrome sends the voice recording to Google to turn it into text.">
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input type="checkbox" className="accent-[#5DCAA5]" checked={draft.voiceInput ?? false} onChange={(e) => update({ voiceInput: e.target.checked })} />
+          Allow
+        </label>
+      </Row>
+
+      <Row label="Web search" hint="When a question isn't in the chapter, search the web through your AI provider. Answers are labelled and list their sources. Each search adds a small provider fee.">
+        <label className="flex items-center gap-2 text-sm cursor-pointer">
+          <input type="checkbox" className="accent-[#5DCAA5]" checked={draft.webSearch ?? false} onChange={(e) => update({ webSearch: e.target.checked })} />
+          Allow
+        </label>
+      </Row>
+
+      <div className="py-3.5 border-b border-line">
+        <div className="text-sm text-ink">About your child <span className="text-ink-3">(optional)</span></div>
+        <div className="text-xs text-ink-3 mt-0.5 mb-2">
+          Helps Curio pick examples and pace — e.g. "loves football, finds long paragraphs hard". Please don't include names or school. Encrypted on this device.
+        </div>
+        <textarea
+          className="curio-input w-full min-h-[64px]"
+          maxLength={LEARNER_NOTE_MAX}
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+        />
+      </div>
+
+      <Row label="Settings PIN" hint={settings.pinHash ? 'Settings are locked. Enter a new PIN to change it.' : 'Lock Settings so only a grown-up can change them.'}>
+        <div className="flex gap-2 items-center">
+          <input
+            className="curio-input font-mono w-[120px]"
+            type="password"
+            inputMode="numeric"
+            placeholder="4–6 digits"
+            aria-label="New settings PIN"
+            maxLength={6}
+            value={newPin}
+            onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))}
+          />
+          {draft.pinHash && (
+            <button className="curio-btn" onClick={() => update({ pinHash: undefined })}>Remove</button>
+          )}
+        </div>
       </Row>
 
       <Row label="Model provider" hint="Your key stays on this device.">

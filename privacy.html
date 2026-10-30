@@ -68,6 +68,10 @@
     <tr><td>Settings (age, language, AI provider, model, optional PIN hash)</td><td>Plaintext in <code>chrome.storage.local</code> on this device</td><td>When cleared in Settings, or the extension is removed</td></tr>
     <tr><td>Your AI provider API key</td><td>Plaintext in <code>chrome.storage.local</code> on this device, never synced</td><td>"Clear key" in Settings, or extension removal</td></tr>
     <tr><td>Progress record: past quiz scores and short topic labels per chapter title</td><td>Encrypted locally in <code>chrome.storage.local</code> using AES-GCM-256</td><td>"Clear Assessment History" in the Dashboard, or extension removal</td></tr>
+    <tr><td>Learning progress: each chapter's key concepts with their flashcards, practice scores and next review dates</td><td>Encrypted locally in <code>chrome.storage.local</code> using AES-GCM-256</td><td>Deleting the chapter, "Clear Assessment History", or extension removal</td></tr>
+    <tr><td>Review reminder list: only the dates reviews are due (no chapter content), used for the toolbar badge</td><td>Plaintext in <code>chrome.storage.local</code> on this device</td><td>Updated with your learning progress; extension removal</td></tr>
+    <tr><td>Saved books: the readable page text and chapter list of an uploaded book (PDF/EPUB), so other chapters can be opened later</td><td>Encrypted locally in <code>chrome.storage.local</code> using AES-GCM-256</td><td>Removing the book from the library, or extension removal (oldest beyond 10 books are dropped)</td></tr>
+    <tr><td>Optional parent note about the learner (Settings → "About your child")</td><td>Encrypted locally in <code>chrome.storage.local</code> using AES-GCM-256; sent to your AI provider as part of the tutor's instructions</td><td>Clear the field in Settings, or extension removal</td></tr>
   </table>
   <p>Nothing in the table above is ever sent to a server operated by us, because we do not operate one.</p>
 
@@ -88,6 +92,35 @@
   </ul>
   <p>Where a provider offers a no-training / zero-retention option for API traffic, we recommend it,
   especially for younger students.</p>
+
+  <h2>3b. Web search (off by default)</h2>
+  <p>
+    If a grown-up turns on <b>Web search</b> in Settings, a question that the chapter doesn't cover is sent to
+    your chosen AI provider together with an instruction to use that provider's own built-in web search tool
+    (Anthropic web search, OpenAI web search, Google Search grounding, or OpenRouter's web plugin). The search runs on
+    the provider's side under their policies; Curio still contacts no other server. These answers are labelled
+    "From the web — not from your chapter" and list their sources. Providers charge a small fee per search.
+  </p>
+
+  <h2>3c. Videos, recordings and web pages</h2>
+  <p>
+    <b>Video and audio files</b> are transcribed <b>on this device</b> by a small speech model (Whisper) that runs in your
+    browser; its weights download once from Hugging Face and the recording itself is never uploaded. The resulting
+    transcript is then treated like any other chapter text.
+  </p>
+  <p>
+    <b>Importing a web page</b> reads only the tab you were on when you clicked the Curio icon, and only when you choose
+    "Import". Curio uses Chrome's <code>activeTab</code> permission for this — it cannot read any other tab or site.
+    Imported pages and transcripts are first checked by your AI provider to make sure they are suitable for a child.
+  </p>
+
+  <h2>3a. Voice features</h2>
+  <p>
+    <b>Read aloud</b> uses your browser's built-in speech voices; Curio does not send that text anywhere.
+    <b>Voice input</b> is off by default. If a grown-up turns it on in Settings, Chrome's speech recognition
+    sends the recording to Google to turn it into text, under
+    <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">Google's Privacy Policy</a>.
+  </p>
 
   <h2>4. One more first-run download</h2>
   <p>
